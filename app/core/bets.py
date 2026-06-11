@@ -1,5 +1,8 @@
 import json
+from datetime import datetime
 from pathlib import Path
+import supabase
+
 
 BETS_FILE = Path("app/data/bets.json")
 
@@ -14,19 +17,21 @@ def save_bets(bets):
     BETS_FILE.write_text(json.dumps(bets, indent=2), encoding="utf-8")
 
 def get_user_bets(user):
-    all_bets = load_bets()
-    return all_bets.get(user, {})
+    res = supabase.table("bets").select("*").eq("user", user).execute()
 
-def save_user_bets(user, new_bets):
-    all_bets = load_bets()
-
-    if user not in all_bets:
-        all_bets[user] = {}
-
-    for match_id, bet in new_bets.items():
-        all_bets[user][str(match_id)] = {
-            "home": int(bet["home"]),
-            "away": int(bet["away"])
+    return {
+        row["match_id"]: {
+            "home": row["home"],
+            "away": row["away"]
         }
+        for row in res.data
+    }
 
-    save_bets(all_bets)
+def save_user_bets(user, bets):
+    for match_id, bet in bets.items():
+        supabase.table("bets").upsert({
+            "user": user,
+            "match_id": str(match_id),
+            "home": bet["home"],
+            "away": bet["away"]
+        }).execute()
