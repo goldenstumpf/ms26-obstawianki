@@ -13,14 +13,20 @@ def load_bets():
 def save_bets(bets):
     BETS_FILE.write_text(json.dumps(bets, indent=2), encoding="utf-8")
 
+def get_user_bets(user):
+    all_bets = load_bets()
+    return all_bets.get(user, {})
 
-def save_user_bets(user, predictions):
-    bets = load_bets()
+def save_user_bets(user, new_bets):
+    all_bets = load_bets()
 
-    if user not in bets:
-        bets[user] = {}
+    if user not in all_bets:
+        all_bets[user] = {}
 
-    for match_id, bet in predictions.items():
-        bets[user][str(match_id)] = bet
+    for match_id, bet in new_bets.items():
+        all_bets[user][str(match_id)] = {
+            "home": int(bet["home"]),
+            "away": int(bet["away"])
+        }
 
-    save_bets(bets)
+    save_bets(all_bets)

@@ -5,8 +5,11 @@ def get_matches():
     return load_json("app/data/matches.json")
 
 
-def defined_matches(matches):
-    defined = []
+def get_bettable_matches(matches, hours=48):
+    now = datetime.now(timezone.utc)
+    limit = now + timedelta(hours=hours)
+
+    filtered = []
 
     for m in matches:
         home = m.get("homeTeam")
@@ -17,18 +20,6 @@ def defined_matches(matches):
         if not home.get("name") or not away.get("name"):
             continue
 
-        defined.append(m)
-
-    return defined
-
-
-def get_upcoming_matches(matches, hours=48):
-    now = datetime.now(timezone.utc)
-    limit = now + timedelta(hours=hours)
-
-    filtered = []
-
-    for m in matches:
         utc_date = m.get("utcDate")
         if not utc_date:
             continue

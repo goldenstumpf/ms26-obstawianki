@@ -1,26 +1,42 @@
 import streamlit as st
-from core.matches import get_matches, defined_matches, get_upcoming_matches
-from core.bets import save_user_bets
+from core.matches import get_matches, get_bettable_matches
+from core.bets import get_user_bets, save_user_bets
 from utils import pl_translations as pl
 
 
 def render_submit_bets():
-    
-    st.set_page_config(
-        page_title="MŚ 2026 - Typowanie",
-        layout="centered"
-    )
 
-    st.title("Zielone Zakłady 2026")
+    st.title("Złóż zakłady")
+    st.caption("Typuj wyniki meczów z nadchodzących 48 godzin.")
+    st.divider()
 
     matches = get_matches()
 
     # Filtrowanie meczów
-    matches_to_display = get_upcoming_matches(defined_matches(matches))    
+    matches_to_bet = get_bettable_matches(matches)
+
+    user = st.session_state["user"]
+    user_bets = get_user_bets(user)    
 
     bets = {}
 
-    for match in matches_to_display:
+    for match in matches_to_bet:
+
+        match_id = match["id"]
+
+        # Sprawdzenie, czy już obstawione
+        existing = user_bets.get(str(match_id), {})
+        is_bet = str(match_id) in user_bets
+
+        home_key = f"home_{match_id}"
+        away_key = f"away_{match_id}"
+
+        if home_key not in st.session_state:
+            st.session_state[home_key] = existing.get("home", 0)
+
+        if away_key not in st.session_state:
+            st.session_state[away_key] = existing.get("away", 0)
+
 
         home_pl = pl.country(match["homeTeam"]["name"])
         away_pl = pl.country(match["awayTeam"]["name"])
@@ -29,6 +45,11 @@ def render_submit_bets():
         group_pl = pl.group(match.get("group", ""))
 
         date_pl = pl.format_kickoff(match["utcDate"])
+
+        if is_bet:
+            st.success("✔ Obstawione")
+        else:
+            st.info("✏️ Do obstawienia")
 
         st.caption(
             f"MECZ #{match['matchNumber']} | {group_pl or stage_pl} | {date_pl}"
@@ -49,7 +70,7 @@ def render_submit_bets():
                 "Gole H",
                 min_value=0,
                 step=1,
-                key=f"home_{match['id']}",
+                key=home_key,
                 label_visibility="collapsed"
             )
 
@@ -64,7 +85,7 @@ def render_submit_bets():
                 "Gole A",
                 min_value=0,
                 step=1,
-                key=f"away_{match['id']}",
+                key=away_key,
                 label_visibility="collapsed"
             )
 
@@ -74,7 +95,7 @@ def render_submit_bets():
                 unsafe_allow_html=True
             )
 
-        bets[match["id"]] = {
+        bets[match_id] = {
             "home": home_goals,
             "away": away_goals
         }
@@ -82,8 +103,9 @@ def render_submit_bets():
         st.divider()
     
     # Zapis
-    user = st.session_state["user"]
+    
 
     if st.button("💾 Zapisz wszystkie typy"):
+
         save_user_bets(user, bets)
         st.success("Zapisano wszystkie typy!")
