@@ -1,12 +1,11 @@
-import json
 import streamlit as st
-from datetime import datetime, timedelta, timezone
 from core.matches import get_matches, defined_matches, get_upcoming_matches
+from core.bets import save_user_bets
 from utils import pl_translations as pl
 
 
 def render_submit_bets():
-
+    
     st.set_page_config(
         page_title="MŚ 2026 - Typowanie",
         layout="centered"
@@ -19,7 +18,7 @@ def render_submit_bets():
     # Filtrowanie meczów
     matches_to_display = get_upcoming_matches(defined_matches(matches))    
 
-    predictions = {}
+    bets = {}
 
     for match in matches_to_display:
 
@@ -75,9 +74,16 @@ def render_submit_bets():
                 unsafe_allow_html=True
             )
 
-        predictions[match["id"]] = {
+        bets[match["id"]] = {
             "home": home_goals,
             "away": away_goals
         }
 
         st.divider()
+    
+    # Zapis
+    user = st.session_state["user"]
+
+    if st.button("💾 Zapisz wszystkie typy"):
+        save_user_bets(user, bets)
+        st.success("Zapisano wszystkie typy!")
