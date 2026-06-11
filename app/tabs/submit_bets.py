@@ -1,6 +1,9 @@
 import json
 import streamlit as st
+from datetime import datetime, timedelta, timezone
+from core.matches import get_matches, defined_matches, get_upcoming_matches
 from utils import pl_translations as pl
+
 
 def render_submit_bets():
 
@@ -11,14 +14,14 @@ def render_submit_bets():
 
     st.title("Zielone Zakłady 2026")
 
-    with open("app/data/matches.json", encoding="utf-8") as f:
-        matches = json.load(f)
+    matches = get_matches()
 
-    matches = [m for m in matches if m.get("matchday") == 2]
+    # Filtrowanie meczów
+    matches_to_display = get_upcoming_matches(defined_matches(matches))    
 
     predictions = {}
 
-    for match in matches:
+    for match in matches_to_display:
 
         home_pl = pl.country(match["homeTeam"]["name"])
         away_pl = pl.country(match["awayTeam"]["name"])
@@ -44,7 +47,7 @@ def render_submit_bets():
 
         with col2:
             home_goals = st.number_input(
-                "Gole gospodarzy",
+                "Gole H",
                 min_value=0,
                 step=1,
                 key=f"home_{match['id']}",
@@ -59,7 +62,7 @@ def render_submit_bets():
 
         with col4:
             away_goals = st.number_input(
-                "Gole gości",
+                "Gole A",
                 min_value=0,
                 step=1,
                 key=f"away_{match['id']}",
