@@ -30,3 +30,6 @@ def get_bettable_matches(matches, hours=48):
             filtered.append(m)
 
     return filtered
+
+def parse_kickoff(utc_string: str):
+    return datetime.fromisoformat(utc_string.replace("Z", "+00:00"))

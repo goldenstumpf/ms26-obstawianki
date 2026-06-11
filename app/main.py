@@ -1,10 +1,8 @@
 import streamlit as st
-from core.bets import init_db
 
 from tabs.login import render_login
 from tabs.submit_bets import render_submit_bets
 
-init_db()
 
 st.set_page_config(
     page_title="Zielone Zakłady 2026",

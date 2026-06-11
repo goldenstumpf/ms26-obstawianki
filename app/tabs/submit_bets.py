@@ -15,8 +15,8 @@ def render_submit_bets():
     # Filtrowanie meczów
     matches_to_bet = get_bettable_matches(matches)
 
-    user = st.session_state["user"]
-    user_bets = get_user_bets(user)    
+    username = st.session_state["user"]
+    user_bets = get_user_bets(username)    
 
     bets = {}
 
@@ -95,17 +95,28 @@ def render_submit_bets():
                 unsafe_allow_html=True
             )
 
-        bets[match_id] = {
+        bets[str(match_id)] = {
             "home": home_goals,
             "away": away_goals
         }
 
         st.divider()
+
+    attempted = len(bets)
     
     # Zapis
-    
 
     if st.button("💾 Zapisz wszystkie typy"):
 
-        save_user_bets(user, bets)
-        st.success("Zapisano wszystkie typy!")
+        saved = save_user_bets(
+            username,
+            bets,
+            matches_to_bet
+        )
+
+
+        st.success(f"✔ Zapisano: {saved} typów.")
+
+        # Nie przygotowano funkcjonalności informacji nt. pominięcia rozpoczętych meczów przy zapisie.
+        #if result["skipped"] > 0:
+        #    st.warning(f"✔ Zapisano tylko: {saved} typów ({skipped} z meczów już rozpoczęto).")

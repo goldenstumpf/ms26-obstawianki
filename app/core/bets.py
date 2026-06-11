@@ -1,37 +1,76 @@
-import json
-from datetime import datetime
-from pathlib import Path
-import supabase
+from datetime import datetime, timezone
+from core.db import supabase
+from core.matches import parse_kickoff
 
+def get_all_bets():
+    res = supabase.table("bets").select("*").execute()
+    data = res.data or []
 
-BETS_FILE = Path("app/data/bets.json")
+    grouped = {}
 
+    for row in data:
+        user = row["username"]
+        match_id = str(row["match_id"])
 
-def load_bets():
-    if not BETS_FILE.exists():
-        return {}
-    return json.loads(BETS_FILE.read_text(encoding="utf-8"))
-
-
-def save_bets(bets):
-    BETS_FILE.write_text(json.dumps(bets, indent=2), encoding="utf-8")
-
-def get_user_bets(user):
-    res = supabase.table("bets").select("*").eq("user", user).execute()
-
-    return {
-        row["match_id"]: {
+        grouped.setdefault(user, {})[match_id] = {
             "home": row["home"],
             "away": row["away"]
         }
-        for row in res.data
-    }
 
-def save_user_bets(user, bets):
-    for match_id, bet in bets.items():
-        supabase.table("bets").upsert({
-            "user": user,
-            "match_id": str(match_id),
-            "home": bet["home"],
-            "away": bet["away"]
-        }).execute()
+    return grouped
+
+def get_user_bets(username: str):
+    res = (
+        supabase.table("bets")
+        .select("*")
+        .eq("username", username)
+        .execute()
+    )
+
+    data = res.data or []
+
+    bets = {}
+
+    for row in data:
+        match_id = str(row["match_id"])
+        bets[match_id] = {
+            "home": row["home"],
+            "away": row["away"]
+        }
+
+    return bets
+
+def save_user_bets(username: str, bets: dict, matches: list):
+    now = datetime.now(timezone.utc)
+
+    rows = []
+
+    saved = 0
+
+    for match in matches:
+        match_id = str(match["id"])
+
+
+        if match_id not in bets:
+            continue
+
+        bet = bets[match_id]
+
+        rows.append({
+            "username": username,
+            "match_id": match_id,
+            "home": bet.get("home", 0),
+            "away": bet.get("away", 0),
+            "updated_at": now.isoformat()
+        })
+
+        saved += 1
+
+
+    if rows:
+        supabase.table("bets").upsert(
+            rows,
+            on_conflict="username,match_id"
+        ).execute()
+
+    return saved
