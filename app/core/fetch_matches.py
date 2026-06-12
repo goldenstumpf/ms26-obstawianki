@@ -1,7 +1,6 @@
 import os
 import requests
-import json
-from datetime import datetime
+from db import supabase
 
 API_KEY = os.getenv("FOOTBALL_API_KEY")
 
@@ -32,19 +31,25 @@ def fetch_matches(competition_id=2000):
 
     return matches
 
-def save_matches_to_json(matches, path="app/data/matches.json"):
-    """
-    Zapisuje mecze do JSON
-    """
 
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def save_matches_to_supabase(matches):
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(matches, f, ensure_ascii=True, indent=2)
+    rows = []
+
+    for match in matches:
+        rows.append({
+            "match_id": str(match["id"]),
+            "match_number": match["matchNumber"],
+            "utc_date": match["utcDate"],
+            "home_team": match["homeTeam"]["name"],
+            "away_team": match["awayTeam"]["name"],
+            "status": match["status"]
+        })
+
+    # UPSERT = nie duplikuje rekordów
+    supabase.table("matches").upsert(rows, on_conflict="match_id").execute()
 
 if __name__ == "__main__":
     matches = fetch_matches()
-
-    save_matches_to_json(matches)
-
-    print(f"Zapisano {len(matches)} meczów do JSON")
+    save_matches_to_supabase(matches)
+    print(f"Zapisano {len(matches)} meczów do Supabase")

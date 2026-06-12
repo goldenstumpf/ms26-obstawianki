@@ -5,7 +5,7 @@ def get_matches():
     return load_json("app/data/matches.json")
 
 
-def get_bettable_matches(matches, hours=48):
+def get_bettable_matches(matches, hours=72):
     now = datetime.now(timezone.utc)
     limit = now + timedelta(hours=hours)
 
