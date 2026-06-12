@@ -48,7 +48,7 @@ def save_user_bets(username: str, bets: dict, matches: list):
     saved = 0
 
     for match in matches:
-        match_id = str(match["id"])
+        match_id = str(match["match_id"])
 
 
         if match_id not in bets:
@@ -59,8 +59,8 @@ def save_user_bets(username: str, bets: dict, matches: list):
         rows.append({
             "username": username,
             "match_id": match_id,
-            "home": bet.get("home", 0),
-            "away": bet.get("away", 0),
+            "home": bet.get("home_team", 0),
+            "away": bet.get("away_team", 0),
             "updated_at": now.isoformat()
         })
 
