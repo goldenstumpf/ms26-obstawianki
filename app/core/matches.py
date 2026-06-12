@@ -1,8 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from utils.json_io import load_json
+from core.db import supabase
 
 def get_matches():
-    return load_json("app/data/matches.json")
+
+    res = (
+        supabase
+        .table("matches")
+        .select("*")
+        .order("utc_date")
+        .execute()
+    )
+
+    return res.data
 
 
 def get_bettable_matches(matches, hours=72):

@@ -37,17 +37,36 @@ def save_matches_to_supabase(matches):
     rows = []
 
     for match in matches:
+
+        score = match.get("score", {})
+        ft = score.get("fullTime", {})
+        et = score.get("extraTime", {})
+        pen = score.get("penalties", {})
+
         rows.append({
             "match_id": str(match["id"]),
             "match_number": match["matchNumber"],
             "utc_date": match["utcDate"],
             "home_team": match["homeTeam"]["name"],
             "away_team": match["awayTeam"]["name"],
-            "status": match["status"]
+            "status": match["status"],
+
+            "duration": match.get("score", {}).get("duration"),
+
+            "flt_home": ft.get("home"),
+            "flt_away": ft.get("away"),
+
+            "ext_home": et.get("home"),
+            "ext_away": et.get("away"),
+
+            "pens_home": pen.get("home"),
+            "pens_away": pen.get("away"),
         })
 
-    # UPSERT = nie duplikuje rekordów
-    supabase.table("matches").upsert(rows, on_conflict="match_id").execute()
+    supabase.table("matches").upsert(
+        rows,
+        on_conflict="match_id"
+    ).execute()
 
 if __name__ == "__main__":
     matches = fetch_matches()

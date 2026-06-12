@@ -38,8 +38,8 @@ def render_submit_bets():
             st.session_state[away_key] = existing.get("away", 0)
 
 
-        home_pl = pl.country(match["homeTeam"]["name"])
-        away_pl = pl.country(match["awayTeam"]["name"])
+        home_pl = pl.country(match["home_team"])
+        away_pl = pl.country(match["away_team"])
 
         stage_pl = pl.stage(match.get("stage", ""))
         group_pl = pl.group(match.get("group", ""))
