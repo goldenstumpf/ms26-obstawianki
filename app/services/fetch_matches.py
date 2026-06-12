@@ -49,6 +49,9 @@ def save_matches_to_supabase(matches):
             "utc_date": match["utcDate"],
             "home_team": match["homeTeam"]["name"],
             "away_team": match["awayTeam"]["name"],
+            "home_code": match["homeTeam"]["tla"],
+            "away_code": match["awayTeam"]["tla"],
+
             "status": match["status"],
 
             "stage": match.get("stage"),
@@ -64,9 +67,6 @@ def save_matches_to_supabase(matches):
 
             "pens_home": pen.get("home"),
             "pens_away": pen.get("away"),
-
-            "home_flag": match["homeTeam"].get("flag"),
-            "away_flag": match["awayTeam"].get("flag"),
 
             "home_crest": match["homeTeam"].get("crest"),
             "away_crest": match["awayTeam"].get("crest"),

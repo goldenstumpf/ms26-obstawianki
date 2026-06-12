@@ -2,8 +2,10 @@ import streamlit as st
 from core.bets import get_user_bets_report
 from utils.formatters import format_score
 from utils import pl_translations as pl
+from utils.ui import render_bet_native
 
 def render_bet_report():
+
 
     username = st.session_state["user"]
     bets = get_user_bets_report(username)
@@ -27,32 +29,28 @@ def render_bet_report():
         st.subheader("🗓️ WKRÓTCE")
 
         for bet in pending:
-            st.write(
-                f"{pl.country(bet['home_team'])} {bet['home']} - {bet['away']} {pl.country(bet['away_team'])}"
-            )
+            render_bet_native(bet, pl)
 
     # ================= LIVE =================
     with col2:
         st.subheader("🔴 NA ŻYWO")
 
         live_sum = sum(bet.get("points") or 0 for bet in live)
-        st.metric("Punkty na żywo: +", live_sum)
+
+        if len(live) > 0:
+            st.markdown(f"**Punkty: +{live_sum}**")
+
 
         for bet in live:
-            st.write(
-                f"{pl.country(bet['home_team'])} {bet['home']} - {bet['away']} {pl.country(bet['away_team'])} "
-                f"| {format_score(bet)} | {bet.get('points', 0)}"
-            )
+            render_bet_native(bet, pl)
 
     # ================= CLOSED =================
     with col3:
         st.subheader("🟢 ZAKOŃCZONE")
 
         closed_sum = sum(bet.get("points") or 0 for bet in closed)
-        st.metric("Punkty zdobyte: ", closed_sum)
+        st.markdown(f"**Punkty: {closed_sum}**")
+
 
         for bet in closed:
-            st.write(
-                f"{pl.country(bet['home_team'])} {bet['home']} - {bet['away']} {pl.country(bet['away_team'])} "
-                f"| {format_score(bet)} | {bet.get('points', 0)}"
-            )
+            render_bet_native(bet, pl)

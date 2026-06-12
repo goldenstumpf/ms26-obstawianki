@@ -85,6 +85,8 @@ def save_user_bets(username: str, bets: dict, matches: list):
             "group_name": match["group_name"],
             "home_team": match["home_team"],
             "away_team": match["away_team"],
+            "home_code": match["home_code"],
+            "away_code": match["away_code"],
             "home_crest": match["home_crest"],
             "away_crest": match["away_crest"],
 
