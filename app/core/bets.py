@@ -18,13 +18,37 @@ def get_all_bets():
 
     return grouped
 
-def get_user_bets(username: str):
-    res = supabase.table("bets") \
-        .select("*") \
-        .eq("username", username) \
+def get_user_bets_report(username: str):
+    res = (
+        supabase.table("bets")
+        .select("*")
+        .eq("username", username)
         .execute()
+    )
 
-    return res.data or []
+    return res.data
+
+
+def get_user_bets(username: str):
+    res = (
+        supabase.table("bets")
+        .select("*")
+        .eq("username", username)
+        .execute()
+    )
+
+    data = res.data or []
+
+    bets = {}
+
+    for row in data:
+        match_id = str(row["match_id"])
+        bets[match_id] = {
+            "home": row["home"],
+            "away": row["away"]
+        }
+
+    return bets
 
 def save_user_bets(username: str, bets: dict, matches: list):
     now = datetime.now(timezone.utc)

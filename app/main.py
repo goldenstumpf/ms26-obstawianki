@@ -2,6 +2,7 @@ import streamlit as st
 
 from tabs.login import render_login
 from tabs.submit_bets import render_submit_bets
+from tabs.bet_report import render_bet_report
 
 
 st.set_page_config(
@@ -16,8 +17,11 @@ if "user" not in st.session_state:
 
 choice = st.sidebar.radio(
     "Menu",
-    ["Złóż zakłady", "Moje zakłady", "Tabela"]
+    ["Złóż zakłady", "Mój raport", "Tabela"]
 )
 
 if choice == "Złóż zakłady":
     render_submit_bets()
+
+if choice == "Mój raport":
+    render_bet_report()
