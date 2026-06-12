@@ -37,10 +37,12 @@ def render_submit_bets():
         if away_key not in st.session_state:
             st.session_state[away_key] = existing.get("away", None)
 
-
         home_pl = pl.country(match["home_team"])
         away_pl = pl.country(match["away_team"])
 
+        home_img = match['home_crest']
+        away_img = match['away_crest']
+        
         stage_pl = pl.stage(match.get("stage", ""))
         group_pl = pl.group(match.get("group_name", ""))
 
@@ -61,7 +63,8 @@ def render_submit_bets():
 
         with col1:
             st.markdown(
-                f"<div style='text-align:right'>{home_pl}</div>",
+                f"<div style='text-align:right'>{home_pl} <img src='{home_img}' width='20'></div>",
+                #f"<div style='text-align:right'>{home_pl}</div>", Prostsza wersja
                 unsafe_allow_html=True
             )
 
@@ -91,7 +94,7 @@ def render_submit_bets():
 
         with col5:
             st.markdown(
-                f"<div>{away_pl}</div>",
+                f"<div style='text-align:left'><img src='{away_img}' width='20'> {away_pl}</div>",
                 unsafe_allow_html=True
             )
 
