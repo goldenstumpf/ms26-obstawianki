@@ -31,13 +31,26 @@ def calculate_points(bet, match):
     bh = bet.get("home")
     ba = bet.get("away")
 
-    if mh == bh and ma == ba:
-        return 3
+    # 1. exact score
+    if bh == mh and ba == ma:
+        points = 4
 
-    if (mh - ma) == (bh - ba):
-        return 1
+    # 2. correct goal difference
+    elif bh - ba == mh - ma:
+        points = 2
 
-    return 0
+    # 3. correct winner
+    elif (bh > ba) - (bh < ba) == (mh > ma) - (mh < ma):
+        points = 1
+
+    # 4. no points
+    else:
+        points = 0
+
+    if abs(mh - bh) + abs(ma - ba) == 1:
+        points += 0.5
+
+    return points
 
 def fetch_active_bets():
     res = supabase.table("bets") \
