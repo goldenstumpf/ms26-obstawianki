@@ -19,25 +19,12 @@ def get_all_bets():
     return grouped
 
 def get_user_bets(username: str):
-    res = (
-        supabase.table("bets")
-        .select("*")
-        .eq("username", username)
+    res = supabase.table("bets") \
+        .select("*") \
+        .eq("username", username) \
         .execute()
-    )
 
-    data = res.data or []
-
-    bets = {}
-
-    for row in data:
-        match_id = str(row["match_id"])
-        bets[match_id] = {
-            "home": row["home"],
-            "away": row["away"]
-        }
-
-    return bets
+    return res.data or []
 
 def save_user_bets(username: str, bets: dict, matches: list):
     now = datetime.now(timezone.utc)
@@ -63,6 +50,8 @@ def save_user_bets(username: str, bets: dict, matches: list):
         rows.append({
             "username": username,
             "match_id": match_id,
+            "home_team": match["home_team"],
+            "away_team": match["away_team"],
             "home": home,
             "away": away,
             "updated_at": now.isoformat()
