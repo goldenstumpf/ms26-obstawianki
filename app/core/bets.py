@@ -74,10 +74,24 @@ def save_user_bets(username: str, bets: dict, matches: list):
         rows.append({
             "username": username,
             "match_id": match_id,
-            "home_team": match["home_team"],
-            "away_team": match["away_team"],
+
+            # USER BET
             "home": home,
             "away": away,
+
+            # MATCH SNAPSHOT (NOWE)
+            "match_number": match["match_number"],
+            "stage": match["stage"],
+            "group_name": match["group_name"],
+            "home_team": match["home_team"],
+            "away_team": match["away_team"],
+            "home_crest": match["home_crest"],
+            "away_crest": match["away_crest"],
+
+            # INIT STATE
+            "status": "pending",
+            "points": None,
+
             "updated_at": now.isoformat()
         })
 

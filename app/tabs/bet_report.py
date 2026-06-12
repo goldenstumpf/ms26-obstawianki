@@ -36,7 +36,7 @@ def render_bet_report():
         st.subheader("🔴 NA ŻYWO")
 
         live_sum = sum(bet.get("points") or 0 for bet in live)
-        st.metric("Punkty na żywo: ", live_sum)
+        st.metric("Punkty na żywo: +", live_sum)
 
         for bet in live:
             st.write(
