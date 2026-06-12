@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 from core.db import supabase
-from core.matches import parse_kickoff
 
 def get_all_bets():
     res = supabase.table("bets").select("*").execute()

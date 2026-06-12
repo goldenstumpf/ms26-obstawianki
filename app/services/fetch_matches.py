@@ -1,6 +1,6 @@
 import os
 import requests
-from db import supabase
+from core.db import supabase
 
 API_KEY = os.getenv("FOOTBALL_API_KEY")
 
