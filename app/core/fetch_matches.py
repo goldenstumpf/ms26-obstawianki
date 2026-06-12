@@ -51,6 +51,9 @@ def save_matches_to_supabase(matches):
             "away_team": match["awayTeam"]["name"],
             "status": match["status"],
 
+            "stage": match.get("stage"),
+            "group_name": match.get("group"),
+
             "duration": match.get("score", {}).get("duration"),
 
             "flt_home": ft.get("home"),

@@ -22,15 +22,14 @@ def get_bettable_matches(matches, hours=72):
     filtered = []
 
     for m in matches:
-        home = m.get("homeTeam")
-        away = m.get("awayTeam")
+        home = m.get("home_team")
+        away = m.get("away_team")
 
         if not home or not away:
             continue
-        if not home.get("name") or not away.get("name"):
-            continue
 
-        utc_date = m.get("utcDate")
+        utc_date = m.get("utc_date")
+
         if not utc_date:
             continue
 

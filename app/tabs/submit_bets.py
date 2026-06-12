@@ -22,7 +22,7 @@ def render_submit_bets():
 
     for match in matches_to_bet:
 
-        match_id = match["id"]
+        match_id = match["match_id"]
 
         # Sprawdzenie, czy już obstawione
         existing = user_bets.get(str(match_id), {})
@@ -42,9 +42,9 @@ def render_submit_bets():
         away_pl = pl.country(match["away_team"])
 
         stage_pl = pl.stage(match.get("stage", ""))
-        group_pl = pl.group(match.get("group", ""))
+        group_pl = pl.group(match.get("group_name", ""))
 
-        date_pl = pl.format_kickoff(match["utcDate"])
+        date_pl = pl.format_kickoff(match["utc_date"])
 
         if is_bet:
             st.success("✔ Obstawione")
@@ -52,7 +52,7 @@ def render_submit_bets():
             st.info("✏️ Do obstawienia")
 
         st.caption(
-            f"MECZ #{match['matchNumber']} | {group_pl or stage_pl} | {date_pl}"
+            f"MECZ #{match['match_number']} | {group_pl or stage_pl} | {date_pl}"
         )
 
         col1, col2, col3, col4, col5 = st.columns(
