@@ -44,28 +44,32 @@ def save_user_bets(username: str, bets: dict, matches: list):
     now = datetime.now(timezone.utc)
 
     rows = []
-
     saved = 0
 
     for match in matches:
         match_id = str(match["match_id"])
-
 
         if match_id not in bets:
             continue
 
         bet = bets[match_id]
 
+        home = bet.get("home")
+        away = bet.get("away")
+
+        # NIE zapisujemy pustych typów
+        if home is None or away is None:
+            continue
+
         rows.append({
             "username": username,
             "match_id": match_id,
-            "home": bet.get("home", 0),
-            "away": bet.get("away", 0),
+            "home": home,
+            "away": away,
             "updated_at": now.isoformat()
         })
 
         saved += 1
-
 
     if rows:
         supabase.table("bets").upsert(

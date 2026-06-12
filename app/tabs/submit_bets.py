@@ -32,10 +32,10 @@ def render_submit_bets():
         away_key = f"away_{match_id}"
 
         if home_key not in st.session_state:
-            st.session_state[home_key] = existing.get("home", 0)
+            st.session_state[home_key] = existing.get("home", None)
 
         if away_key not in st.session_state:
-            st.session_state[away_key] = existing.get("away", 0)
+            st.session_state[away_key] = existing.get("away", None)
 
 
         home_pl = pl.country(match["home_team"])
