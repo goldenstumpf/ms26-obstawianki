@@ -21,6 +21,10 @@ def render_bet_report():
             closed.append(bet)
         else:
             pending.append(bet)
+    
+    live = sorted(live, key=lambda b: b.get("match_number"))
+    pending = sorted(pending, key=lambda b: b.get("match_number"))
+    closed = sorted(closed, key=lambda b: b.get("match_number"), reverse=True)
 
     col1, col2, col3 = st.columns(3)
 
