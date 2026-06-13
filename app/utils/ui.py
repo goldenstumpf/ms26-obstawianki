@@ -32,6 +32,14 @@ def render_bet_native(bet, pl):
             )
         
         else:
+            st.markdown(
+                f"""
+                <div style='text-align:center; font-size:11px; color:gray; margin-top:-4px;'>
+                    ({pl.format_kickoff(bet["utc_date"])})
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 
     with c3:

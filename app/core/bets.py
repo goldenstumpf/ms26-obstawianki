@@ -94,7 +94,9 @@ def save_user_bets(username: str, bets: dict, matches: list):
             "status": "pending",
             "points": None,
 
-            "updated_at": now.isoformat()
+            "updated_at": now.isoformat(),
+
+            "utc_date": match["utc_date"]
         })
 
         saved += 1
@@ -106,3 +108,42 @@ def save_user_bets(username: str, bets: dict, matches: list):
         ).execute()
 
     return saved
+
+def get_total_table():
+    res = (
+        supabase.table("bets")
+        .select("username, points")
+        .eq("status", "closed")
+        .execute()
+    )
+
+    bets = res.data or []
+
+    stats = {}
+
+    for bet in bets:
+        username = bet["username"]
+
+        if username not in stats:
+            stats[username] = {
+                "username": username,
+                "bets": 0,
+                "points": 0.0
+            }
+
+        stats[username]["bets"] += 1
+        stats[username]["points"] += bet.get("points") or 0
+
+    rows = []
+
+    for row in stats.values():
+        rows.append({
+            "username": row["username"],
+            "bets": row["bets"],
+            "points": row["points"],
+            "avg": round(row["points"] / row["bets"], 2)
+        })
+
+    rows.sort(key=lambda x: x["points"], reverse=True)
+
+    return rows

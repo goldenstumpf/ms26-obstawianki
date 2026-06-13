@@ -3,6 +3,7 @@ import streamlit as st
 from tabs.login import render_login
 from tabs.submit_bets import render_submit_bets
 from tabs.bet_report import render_bet_report
+from tabs.total_table import render_total_table
 
 
 st.set_page_config(
@@ -25,3 +26,6 @@ if choice == "Złóż zakłady":
 
 if choice == "Mój raport":
     render_bet_report()
+
+if choice == "Tabela":
+    render_total_table()
