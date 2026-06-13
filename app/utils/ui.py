@@ -47,7 +47,7 @@ def render_bet_native(bet, pl):
 
     with c4:
         points = bet.get("points")
-        if points:
+        if points is not None:
 
             color = "chartreuse" if points > 0 else "green"
             st.markdown(
