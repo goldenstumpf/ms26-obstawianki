@@ -19,6 +19,8 @@ def render_bet_native(bet, pl):
         flt_home = bet.get("flt_home")
         flt_away = bet.get("flt_away")
 
+
+
         if flt_home is not None and flt_away is not None:
             st.markdown(
                 f"""
@@ -28,6 +30,9 @@ def render_bet_native(bet, pl):
                 """,
                 unsafe_allow_html=True
             )
+        
+        else:
+
 
     with c3:
         st.markdown(f"<div style='text-align:right'><small>{bet['away_code']}</small> <img src='{bet['away_crest']}' width='18'></div>", unsafe_allow_html=True)
@@ -36,7 +41,7 @@ def render_bet_native(bet, pl):
         points = bet.get("points")
         if points:
 
-            color = "chartreuse" if points > 0 else "gray"
+            color = "chartreuse" if points > 0 else "green"
             st.markdown(
                 f"<div style='text-align:center; color:{color}; font-weight:600;'>"
                 f"{points}"
