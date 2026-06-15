@@ -2,31 +2,49 @@ name: WC26 Pipeline (Fetch + Scoring)
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/5 * * * *"   # co 5 minut
 
-  workflow_dispatch:
+  workflow_dispatch:         # ręczne odpalenie z GitHuba
 
 jobs:
   pipeline:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. checkout
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Python + CACHE (TO TU)
+      # 2. Setup Python + cache pip
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
 
-      # 3. instalacja zależności
+      # 3. Install dependencies
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 4. Fetch matches
+      # 4. Monitoring gate (czy w ogóle coś liczyć)
+      - name: Check monitoring gate
+        id: gate
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          cd app
+          RESULT=$(python -c "from services.monitoring_gate import has_matches_to_monitor; print(has_matches_to_monitor())")
+          echo "result=$RESULT" >> $GITHUB_OUTPUT
+
+      # 5. Stop jeśli brak meczów do monitoringu
+      - name: Skip if nothing to monitor
+        if: steps.gate.outputs.result != 'True'
+        run: |
+          echo "No matches to monitor - skipping pipeline"
+          exit 0
+
+      # 6. Fetch matches
       - name: Fetch matches
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -36,7 +54,7 @@ jobs:
           cd app
           python -m services.fetch_matches
 
-      # 5. Score bets
+      # 7. Score bets
       - name: Score bets
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
