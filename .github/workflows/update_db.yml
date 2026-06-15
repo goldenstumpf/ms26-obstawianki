@@ -44,4 +44,4 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           cd app
-          python -m app.services.score_bets
+          python -m services.score_bets
