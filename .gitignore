@@ -8,3 +8,5 @@ data/users.json
 
 .vscode/
 .idea/
+
+.env

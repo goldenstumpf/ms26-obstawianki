@@ -42,3 +42,14 @@ def get_bettable_matches(matches, hours=72):
 
 def parse_kickoff(utc_string: str):
     return datetime.fromisoformat(utc_string.replace("Z", "+00:00"))
+
+def has_matches_to_monitor():
+    res = (
+        supabase.table("matches")
+        .select("match_id")
+        .eq("needs_monitoring", True)
+        .limit(1)
+        .execute()
+    )
+
+    return len(res.data or []) > 0

@@ -1,10 +1,24 @@
 import os
 import requests
 from app.core.db import supabase
+from datetime import datetime, timezone, timedelta
 
 API_KEY = os.getenv("FOOTBALL_API_KEY")
 
 BASE_URL = "https://api.football-data.org/v4"
+
+def resolve_monitoring(status, utc_date):
+
+    if status in ["FINISHED", "CANCELLED", "POSTPONED"]:
+        return False
+
+    kickoff = datetime.fromisoformat(
+        utc_date.replace("Z", "+00:00")
+    )
+
+    now = datetime.now(timezone.utc)
+
+    return kickoff - now < timedelta(hours=1)
 
 def fetch_matches(competition_id=2000):
     """
@@ -70,6 +84,11 @@ def save_matches_to_supabase(matches):
 
             "home_crest": match["homeTeam"].get("crest"),
             "away_crest": match["awayTeam"].get("crest"),
+
+            "needs_monitoring": resolve_monitoring(
+                match["status"],
+                match["utcDate"]
+            )
         })
 
     supabase.table("matches").upsert(
