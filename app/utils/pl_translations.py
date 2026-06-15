@@ -123,7 +123,12 @@ def polish_datetime(utc_date: str):
     )
 
 
-def format_kickoff(utc_date: str) -> str:
-    return polish_datetime(
-        utc_date
-    ).strftime("%d.%m.%Y %H:%M")
+def format_kickoff(utc_date: str, short = False) -> str:
+    if short:
+        return polish_datetime(
+            utc_date
+        ).strftime("%d.%m %H:%M")
+    else:
+        return polish_datetime(
+            utc_date
+        ).strftime("%d.%m.%Y %H:%M")
