@@ -1,6 +1,6 @@
 import os
 import requests
-from app.core.db import supabase
+from core.db import supabase
 from datetime import datetime, timezone, timedelta
 
 API_KEY = os.getenv("FOOTBALL_API_KEY")

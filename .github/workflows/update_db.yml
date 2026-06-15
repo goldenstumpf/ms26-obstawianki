@@ -34,7 +34,8 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
         run: |
-          python -m app.services.fetch_matches
+          cd app
+          python -m services.fetch_matches
 
       # 5. Score bets (UPDATE BETS)
       - name: Score bets
@@ -42,4 +43,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
+          cd app
           python -m app.services.score_bets

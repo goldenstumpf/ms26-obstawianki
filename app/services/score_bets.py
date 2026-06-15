@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from app.core.db import supabase
+from core.db import supabase
 
 LIVE_STATUSES = {
     "IN_PLAY",
