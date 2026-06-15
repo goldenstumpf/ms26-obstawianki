@@ -37,28 +37,23 @@ jobs:
           RESULT=$(python -c "from services.monitoring_gate import has_matches_to_monitor; print(has_matches_to_monitor())")
           echo "result=$RESULT" >> $GITHUB_OUTPUT
 
-      # 5. Stop jeśli brak meczów do monitoringu
-      - name: Skip if nothing to monitor
-        if: steps.gate.outputs.result != 'True'
-        run: |
-          echo "No matches to monitor - skipping pipeline"
-          exit 0
-
-      # 6. Fetch matches
+      # 5. Fetch matches
       - name: Fetch matches
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        if: steps.gate.outputs.result == 'True'
         run: |
           cd app
           python -m services.fetch_matches
 
-      # 7. Score bets
+      # 6. Score bets
       - name: Score bets
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        if: steps.gate.outputs.result == 'True'
         run: |
           cd app
           python -m services.score_bets
