@@ -1,21 +1,13 @@
-def format_score(bet):
-    h = bet.get("flt_home")
-    a = bet.get("flt_away")
-
-    if h is None or a is None:
+def format_score(home: int | None, away: int | None) -> str:
+    if home is None or away is None:
         return "-"
+    return f"{home}:{away}"
 
-    return f"{h}:{a}"
 
-def display_username(username: str):
+def format_username(username: str) -> str:
     parts = username.split("-")
 
-    formatted = []
-
-    for part in parts:
-        if len(part) == 1:
-            formatted.append(part.upper() + ".")
-        else:
-            formatted.append(part.capitalize())
-
-    return " ".join(formatted)
+    return " ".join(
+        p.upper() + "." if len(p) == 1 else p.capitalize()
+        for p in parts
+    )

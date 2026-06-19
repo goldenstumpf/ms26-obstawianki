@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from core.db import supabase
 from typing import TypedDict, Optional
-from utils.time import parse_kickoff
+from utils.formatters import parse_kickoff
 
 # =========================
 # MODELS

@@ -1,6 +1,3 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 COUNTRIES = {
     # Grupa A
     "Mexico": "Meksyk",
