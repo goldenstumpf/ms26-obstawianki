@@ -1,7 +1,4 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def get_secret(key: str):
     """
@@ -13,4 +10,6 @@ def get_secret(key: str):
         import streamlit as st
         return st.secrets[key]
     except Exception:
+        from dotenv import load_dotenv
+        load_dotenv()
         return os.getenv(key)
