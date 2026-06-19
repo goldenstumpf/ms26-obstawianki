@@ -1,6 +1,6 @@
 import streamlit as st
 from core.matches import get_matches, get_bettable_matches
-from core.bets import get_user_bets, save_user_bets
+from core.bets import get_bets, save_bets
 from utils import pl_translations as pl
 
 
@@ -16,7 +16,8 @@ def render_submit_bets():
     matches_to_bet = get_bettable_matches(matches)
 
     username = st.session_state["user"]
-    user_bets = get_user_bets(username)    
+    user_bets = get_bets(username)    
+    user_bets_dict = {b["match_id"]: b for b in user_bets}
 
     bets = {}
 
@@ -25,8 +26,8 @@ def render_submit_bets():
         match_id = match["match_id"]
 
         # Sprawdzenie, czy już obstawione
-        existing = user_bets.get(str(match_id), {})
-        is_bet = str(match_id) in user_bets
+        existing = user_bets_dict.get(str(match_id), {})
+        is_bet = str(match_id) in user_bets_dict
 
         home_key = f"home_{match_id}"
         away_key = f"away_{match_id}"
@@ -111,14 +112,17 @@ def render_submit_bets():
 
     if st.button("💾 Zapisz wszystkie typy"):
 
-        saved = save_user_bets(
+        result = save_bets(
             username,
             bets,
             matches_to_bet
         )
 
 
-        st.success(f"✔ Zapisano: {saved} typów.")
+        st.success(f"✔ Zapisano zmian: {result['changed']}")
+
+        if result["skipped"] > 0:
+            st.warning(f"Pominięto: {result['skipped']} (brak danych / nieprawidłowe)")
 
         # Nie przygotowano funkcjonalności informacji nt. pominięcia rozpoczętych meczów przy zapisie.
         #if result["skipped"] > 0:

@@ -1,29 +1,30 @@
 import os
 import requests
+import logging
+from datetime import datetime, timezone
+
 from core.db import supabase
-from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("FOOTBALL_API_KEY")
-
 BASE_URL = "https://api.football-data.org/v4"
 
-def resolve_monitoring(status, utc_date):
+TIMEOUT = 15
 
-    if status in ["FINISHED", "CANCELLED", "POSTPONED"]:
-        return False
 
-    kickoff = datetime.fromisoformat(
-        utc_date.replace("Z", "+00:00")
-    )
+# -----------------------------
+# FETCH
+# -----------------------------
 
-    now = datetime.now(timezone.utc)
-
-    return kickoff - now < timedelta(hours=1)
-
-def fetch_matches(competition_id=2000):
+def fetch_matches(competition_id: int = 2000) -> list[dict]:
     """
-    Pobiera mecze dla danej ligi (domyślnie dla Mistrzostw Świata) korzystając z football-data.org.
+    Fetch matches from football-data API.
+    Returns normalized list sorted by utcDate.
     """
+
+    if not API_KEY:
+        raise RuntimeError("FOOTBALL_API_KEY is missing")
 
     url = f"{BASE_URL}/competitions/{competition_id}/matches"
 
@@ -31,72 +32,127 @@ def fetch_matches(competition_id=2000):
         "X-Auth-Token": API_KEY
     }
 
-    response = requests.get(url, headers=headers)
-    response.raise_for_status
+    logger.info(f"Fetching matches for competition={competition_id}")
+
+    response = requests.get(url, headers=headers, timeout=TIMEOUT)
+    response.raise_for_status()
 
     data = response.json()
-
     matches = data.get("matches", [])
 
-    matches.sort(key=lambda m: m["utcDate"])
+    # sort for deterministic ordering
+    matches.sort(key=lambda m: m.get("utcDate", ""))
 
+    # add stable match numbering
     for i, match in enumerate(matches, start=1):
         match["matchNumber"] = i
+
+    logger.info(f"Fetched {len(matches)} matches")
 
     return matches
 
 
-def save_matches_to_supabase(matches):
+# -----------------------------
+# TRANSFORM
+# -----------------------------
 
-    rows = []
+def transform_match(match: dict) -> dict:
+    """
+    Normalize API match → Supabase row.
+    """
 
-    for match in matches:
+    score = match.get("score", {})
+    ft = score.get("fullTime", {}) or {}
+    et = score.get("extraTime", {}) or {}
+    pen = score.get("penalties", {}) or {}
 
-        score = match.get("score", {})
-        ft = score.get("fullTime", {})
-        et = score.get("extraTime", {})
-        pen = score.get("penalties", {})
+    home = match.get("homeTeam", {}) or {}
+    away = match.get("awayTeam", {}) or {}
 
-        rows.append({
-            "match_id": str(match["id"]),
-            "match_number": match["matchNumber"],
-            "utc_date": match["utcDate"],
-            "home_team": match["homeTeam"]["name"],
-            "away_team": match["awayTeam"]["name"],
-            "home_code": match["homeTeam"]["tla"],
-            "away_code": match["awayTeam"]["tla"],
+    return {
+        "match_id": str(match["id"]),
+        "match_number": match.get("matchNumber"),
 
-            "status": match["status"],
+        "utc_date": match.get("utcDate"),
 
-            "stage": match.get("stage"),
-            "group_name": match.get("group"),
+        "home_team": home.get("name"),
+        "away_team": away.get("name"),
 
-            "duration": match.get("score", {}).get("duration"),
+        "home_code": home.get("tla"),
+        "away_code": away.get("tla"),
 
-            "flt_home": ft.get("home"),
-            "flt_away": ft.get("away"),
+        "status": match.get("status"),
 
-            "ext_home": et.get("home"),
-            "ext_away": et.get("away"),
+        "stage": match.get("stage"),
+        "group_name": match.get("group"),
 
-            "pens_home": pen.get("home"),
-            "pens_away": pen.get("away"),
+        "duration": score.get("duration"),
 
-            "home_crest": match["homeTeam"].get("crest"),
-            "away_crest": match["awayTeam"].get("crest"),
+        # full time
+        "flt_home": ft.get("home"),
+        "flt_away": ft.get("away"),
 
-            "needs_monitoring": resolve_monitoring(
-                match["status"],
-                match["utcDate"]
-            )
-        })
+        # extra time
+        "ext_home": et.get("home"),
+        "ext_away": et.get("away"),
 
-    supabase.table("matches").upsert(
-        rows,
-        on_conflict="match_id"
-    ).execute()
+        # penalties
+        "pens_home": pen.get("home"),
+        "pens_away": pen.get("away"),
+
+        "home_crest": home.get("crest"),
+        "away_crest": away.get("crest"),
+    }
+
+
+# -----------------------------
+# DB WRITE
+# -----------------------------
+
+def save_matches_to_supabase(matches: list[dict]) -> None:
+    """
+    Upsert matches into Supabase.
+    """
+
+    if not matches:
+        logger.warning("No matches to save")
+        return
+
+    rows = [transform_match(m) for m in matches]
+
+    logger.info(f"Upserting {len(rows)} matches to Supabase")
+
+    supabase.table("matches") \
+        .upsert(rows, on_conflict="match_id") \
+        .execute()
+
+    logger.info("Matches upsert completed")
+
+
+# -----------------------------
+# PIPELINE
+# -----------------------------
+
+def run_fetch_matches(competition_id: int = 2000) -> list[dict]:
+    """
+    Full ingestion pipeline:
+    1. fetch
+    2. transform
+    3. persist
+    """
+
+    matches = fetch_matches(competition_id)
+    save_matches_to_supabase(matches)
+
+    return matches
+
+
+# -----------------------------
+# CLI
+# -----------------------------
 
 if __name__ == "__main__":
-    matches = fetch_matches()
-    save_matches_to_supabase(matches)
+    logging.basicConfig(level=logging.INFO)
+
+    matches = run_fetch_matches()
     print(f"Zapisano {len(matches)} meczów do Supabase")

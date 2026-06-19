@@ -1,5 +1,5 @@
 import streamlit as st
-from core.bets import get_user_bets_report
+from core.bets import get_bets
 from utils.formatters import format_score
 from utils import pl_translations as pl
 from utils.ui import render_bet_native
@@ -8,7 +8,7 @@ def render_bet_report():
 
 
     username = st.session_state["user"]
-    bets = get_user_bets_report(username)
+    bets = get_bets(username)
 
     live = []
     pending = []
