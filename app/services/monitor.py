@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 from services.fetch_matches import run_fetch_matches
-from services.score_bets import run_score_bets
+from services.score_bets import run_scoring
 from core.db import supabase
 
 
@@ -37,7 +37,6 @@ def run_monitor():
                     f"[{datetime.utcnow()}] ⚽ Matches to monitor"
                 )
 
-                print(supabase)
                 run_fetch_matches()
                 run_score_bets()
 

@@ -1,5 +1,6 @@
 import streamlit as st
-import utils.pl_translations as pl
+import core.i18n as pl
+from utils.time import format_datetime, parse_kickoff
 
 def render_bet_native(bet, pl):
     c1, c2, c3, c4 = st.columns([2, 2, 2, 1.5])
@@ -36,7 +37,7 @@ def render_bet_native(bet, pl):
             st.markdown(
                 f"""
                 <div style='text-align:center; font-size:11px; color:gray; margin-top:-4px;'>
-                    ({pl.format_kickoff(bet["utc_date"], True)})
+                    ({format_datetime(parse_kickoff(bet["utc_date"]), True)})
                 </div>
                 """,
                 unsafe_allow_html=True

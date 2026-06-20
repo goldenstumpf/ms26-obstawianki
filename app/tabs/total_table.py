@@ -1,28 +1,37 @@
 import streamlit as st
+from collections import defaultdict
 
-from core.bets import get_total_table
-from utils.formatters import display_username
+from core.bets import get_bets
+from utils.formatters import format_username
 
 
-def render_total_table():
+def render_bets_table(usernames=None):
 
-    st.title("Tabela Generalna")
+    bets = [
+        b for b in get_bets(usernames)
+        if b.get("points") is not None
+    ]
 
-    table = get_total_table()
+    # grupowanie
+    stats = defaultdict(lambda: {"bets": 0, "points": 0})
 
+    for b in bets:
+        u = b["username"]
+        stats[u]["bets"] += 1
+        stats[u]["points"] += b.get("points")
+
+    # budowanie tabeli
     rows = []
+    for i, (user, data) in enumerate(sorted(stats.items(), key=lambda x: x[1]["points"], reverse=True), start=1):
+        bets_count = data["bets"]
+        points = data["points"]
 
-    for i, user in enumerate(table, start=1):
         rows.append({
-            "#": i,
-            "Gracz": display_username(user["username"]),
-            "Bety": user["bets"],
-            "Punkty": user["points"],
-            "Pkt / Bet": user["avg"]
+            "N": i,
+            "Gracz": format_username(user),
+            "Zakłady": bets_count,
+            "Punkty": f"**{points}**",
+            "Pkt/Zakłady": round(points / bets_count, 2) if bets_count else 0
         })
 
-    st.dataframe(
-        rows,
-        hide_index=True,
-        width="stretch"
-    )
+    st.table(rows)

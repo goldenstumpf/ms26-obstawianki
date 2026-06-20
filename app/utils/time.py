@@ -8,3 +8,11 @@ def parse_kickoff(utc_string: str) -> datetime:
 
 def to_poland_time(dt: datetime) -> datetime:
     return dt.astimezone(ZoneInfo("Europe/Warsaw"))
+
+def format_datetime(dt: datetime, short: bool = False) -> str:
+    dt = to_poland_time(dt)
+
+    if short:
+        return dt.strftime("%d.%m %H:%M")
+
+    return dt.strftime("%d.%m.%Y %H:%M")

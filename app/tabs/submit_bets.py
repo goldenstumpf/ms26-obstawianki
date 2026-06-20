@@ -1,7 +1,8 @@
 import streamlit as st
 from core.matches import get_matches, get_bettable_matches
 from core.bets import get_bets, save_bets
-from utils import pl_translations as pl
+import core.i18n as pl
+from utils.time import format_datetime, parse_kickoff
 
 
 def render_submit_bets():
@@ -47,7 +48,7 @@ def render_submit_bets():
         stage_pl = pl.stage(match.get("stage", ""))
         group_pl = pl.group(match.get("group_name", ""))
 
-        date_pl = pl.format_kickoff(match["utc_date"])
+        date_pl = format_datetime(parse_kickoff(match["utc_date"]))
 
         if is_bet:
             st.success("✔ Obstawione")
@@ -122,7 +123,7 @@ def render_submit_bets():
         st.success(f"✔ Zapisano zmian: {result['changed']}")
 
         if result["skipped"] > 0:
-            st.warning(f"Pominięto: {result['skipped']} (brak danych / nieprawidłowe)")
+            st.warning(f"Pominięto: {result['skipped']} (brak zakładu / nieprawidłowe dane)")
 
         # Nie przygotowano funkcjonalności informacji nt. pominięcia rozpoczętych meczów przy zapisie.
         #if result["skipped"] > 0:

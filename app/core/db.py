@@ -1,5 +1,3 @@
-import os
-import streamlit as st
 from supabase import create_client
 from core.config import get_secret
 
