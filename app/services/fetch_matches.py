@@ -1,9 +1,8 @@
 import os
 import requests
 import logging
-from datetime import datetime, timezone
 
-from core.db import supabase
+from core.db import get_supabase
 
 logger = logging.getLogger(__name__)
 
