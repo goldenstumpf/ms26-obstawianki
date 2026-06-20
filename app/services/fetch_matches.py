@@ -121,7 +121,7 @@ def save_matches_to_supabase(matches: list[dict]) -> None:
 
     logger.info(f"Upserting {len(rows)} matches to Supabase")
 
-    supabase.table("matches") \
+    get_supabase().table("matches") \
         .upsert(rows, on_conflict="match_id") \
         .execute()
 
