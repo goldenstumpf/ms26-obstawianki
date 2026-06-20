@@ -1,16 +1,22 @@
 import os
+from dotenv import load_dotenv
+
+# load .env only for local / CLI
+load_dotenv()
+
 
 def get_secret(key: str):
     """
-    1. Streamlit cloud/local -> st.secrets
-    2. GitHub Actions / local scripts -> os.getenv
+    Priority:
+    1. Streamlit Cloud / runtime secrets
+    2. Local .env / environment variables
     """
 
     try:
-        import streamlit as st 
-        return st.secrets[key]
+        import streamlit as st
+        if hasattr(st, "secrets") and key in st.secrets:
+            return st.secrets[key]
     except Exception:
-        
-        return os.getenv(key)
+        pass
 
-    
+    return os.getenv(key)

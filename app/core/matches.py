@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from core.db import supabase
+from core.db import get_supabase
 from typing import TypedDict, Optional
 from utils.time import parse_kickoff
 
@@ -49,7 +49,7 @@ def get_matches() -> list[Match]:
     """
 
     res = (
-        supabase
+        get_supabase()
         .table("matches")
         .select("*")
         .order("utc_date")

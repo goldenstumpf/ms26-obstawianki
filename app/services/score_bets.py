@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import logging
 
-from core.db import supabase
+from core.db import get_supabase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
 
 def fetch_active_bets() -> list[dict]:
     """Fetch all non-closed bets."""
-    res = supabase.table("bets") \
+    res = get_supabase().table("bets") \
         .select("*") \
         .neq("status", "closed") \
         .execute()
@@ -107,7 +107,7 @@ def fetch_matches_map(match_ids: list[str]) -> dict[str, dict]:
     if not match_ids:
         return {}
 
-    res = supabase.table("matches") \
+    res = get_supabase().table("matches") \
         .select("*") \
         .in_("match_id", match_ids) \
         .execute()
@@ -160,7 +160,7 @@ def update_bet(bet: dict, match: dict) -> dict:
             "skipped": True
         }
 
-    supabase.table("bets").update({
+    get_supabase().table("bets").update({
         "status": new_status,
         "points": float(points) if points is not None else None,
         "flt_home": match.get("flt_home"),

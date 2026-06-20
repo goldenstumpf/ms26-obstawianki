@@ -1,5 +1,5 @@
 from typing import Optional, TypedDict
-from core.db import supabase
+from core.db import get_supabase
 
 
 # =========================
@@ -31,7 +31,7 @@ def authenticate(username: str, pin: str) -> bool:
         return False
 
     res = (
-        supabase
+        get_supabase()
         .table("users")
         .select("pin")
         .eq("username", username)
@@ -57,7 +57,7 @@ def get_user(username: str) -> Optional[User]:
     """
 
     res = (
-        supabase
+        get_supabase()
         .table("users")
         .select("*")
         .eq("username", username)
@@ -83,7 +83,7 @@ def user_exists(username: str) -> bool:
     """
 
     res = (
-        supabase
+        get_supabase()
         .table("users")
         .select("username")
         .eq("username", username)

@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
-from core.db import supabase
+from core.db import get_supabase
 from typing import TypedDict
 
 
 # =========================
-# MODELS (minimal contracts)
+# MODELS
 # =========================
 
 
@@ -67,7 +67,7 @@ def get_bets(username: str | list[str] | None = None) -> list[BetRecord]:
         list[BetRecord]
     """
 
-    query = supabase.table("bets").select("*")
+    query = get_supabase().table("bets").select("*")
 
     if isinstance(username, str):
         query = query.eq("username", username)
@@ -101,7 +101,7 @@ def save_bets(
 
     # 1. GET EXISTING BETS (ONLY USER)
     existing_res = (
-        supabase.table("bets")
+        get_supabase().table("bets")
         .select("match_id, home, away")
         .eq("username", username)
         .execute()
@@ -172,7 +172,7 @@ def save_bets(
 
     # 4. WRITE ONLY CHANGED
     if rows:
-        supabase.table("bets").upsert(
+        get_supabase().table("bets").upsert(
             rows,
             on_conflict="username,match_id"
         ).execute()
