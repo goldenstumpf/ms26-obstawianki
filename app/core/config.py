@@ -2,7 +2,11 @@ import os
 from dotenv import load_dotenv
 
 # load .env only for local / CLI
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 
 def get_secret(key: str):
