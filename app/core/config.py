@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 
 # load .env only for local / CLI
 try:
