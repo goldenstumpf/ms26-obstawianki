@@ -31,7 +31,7 @@ def render_bets_table(usernames=None):
             "Gracz": format_username(user),
             "Zakłady": bets_count,
             "Punkty": f"**{points}**",
-            "Pkt/Zakłady": round(points / bets_count, 2) if bets_count else 0
+            "Pkt/Zakłady": round(points / bets_count, 4) if bets_count else 0
         })
 
     st.table(rows)

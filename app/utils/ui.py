@@ -54,7 +54,7 @@ def render_bet_native(bet, pl):
             color = "chartreuse" if points > 0 else "green"
             st.markdown(
                 f"<div style='text-align:center; color:{color}; font-weight:600;'>"
-                f"{points}"
+                f"{points:.1f}"
                 f"</div>",
                 unsafe_allow_html=True
             )
