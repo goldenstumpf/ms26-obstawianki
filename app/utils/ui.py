@@ -13,7 +13,7 @@ def render_bet_native(bet, pl):
     with c2:
         st.markdown(
             f"<div style='text-align:center; font-weight:600;'>"
-            f"{bet['home']} : {bet['away']}"
+            f"{bet['home_bet']} : {bet['away_bet']}"
             f"</div>",
             unsafe_allow_html=True
         )

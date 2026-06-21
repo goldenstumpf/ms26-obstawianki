@@ -34,10 +34,10 @@ def render_submit_bets():
         away_key = f"away_{match_id}"
 
         if home_key not in st.session_state:
-            st.session_state[home_key] = existing.get("home", None)
+            st.session_state[home_key] = existing.get("home_bet", None)
 
         if away_key not in st.session_state:
-            st.session_state[away_key] = existing.get("away", None)
+            st.session_state[away_key] = existing.get("away_bet", None)
 
         home_pl = pl.country(match["home_team"])
         away_pl = pl.country(match["away_team"])
@@ -101,8 +101,8 @@ def render_submit_bets():
             )
 
         bets[str(match_id)] = {
-            "home": home_goals,
-            "away": away_goals
+            "home_bet": home_goals,
+            "away_bet": away_goals
         }
 
         st.divider()

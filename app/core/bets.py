@@ -9,8 +9,8 @@ from typing import TypedDict
 
 
 class BetInput(TypedDict):
-    home: int | None
-    away: int | None
+    home_bet: int | None
+    away_bet: int | None
 
 class MatchSnapshot(TypedDict):
     match_id: str
@@ -33,8 +33,8 @@ class BetRecord(TypedDict):
     username: str
     match_id: str
 
-    home: int | None
-    away: int | None
+    home_bet: int | None
+    away_bet: int | None
 
     status: str
     points: float | None
@@ -78,14 +78,105 @@ def get_bets(username: str | list[str] | None = None) -> list[BetRecord]:
     res = query.execute()
     return res.data or []
 
+
+def get_full_bets_info(
+    username: str | list[str] | None = None,
+) -> list[dict]:
+    """
+    Fetch matches enriched with bet information.
+
+    Args:
+        username:
+            - None -> all users
+            - str -> single user
+            - list[str] -> multiple users
+
+    Returns:
+        List of match+bet records.
+
+        For a specific user, returns all matches (including those without bets).
+
+        For multiple users / all users, returns a row for every
+        (user, match) combination, including missing bets.
+    """
+
+    supabase = get_supabase()
+
+    matches = (
+        supabase.table("matches")
+        .select("*")
+        .execute()
+        .data
+        or []
+    )
+
+    bets_query = supabase.table("bets").select("*")
+
+    if isinstance(username, str):
+        bets_query = bets_query.eq("username", username)
+
+    elif isinstance(username, list):
+        bets_query = bets_query.in_("username", username)
+
+    bets = bets_query.execute().data or []
+
+    # Single-user case
+    if isinstance(username, str):
+        bets_by_match = {
+            bet["match_id"]: bet
+            for bet in bets
+        }
+
+        result = []
+
+        for match in matches:
+            bet = bets_by_match.get(match["match_id"], {})
+
+            result.append({
+                **match,
+                **bet,
+                "username": username,
+            })
+
+        return result
+
+    # Multi-user / all-users case
+    usernames = (
+        username
+        if isinstance(username, list)
+        else sorted({bet["username"] for bet in bets})
+    )
+
+    bets_by_key = {
+        (bet["username"], bet["match_id"]): bet
+        for bet in bets
+    }
+
+    result = []
+
+    for user in usernames:
+        for match in matches:
+            bet = bets_by_key.get(
+                (user, match["match_id"]),
+                {},
+            )
+
+            result.append({
+                **match,
+                **bet,
+                "username": user,
+            })
+
+    return result
+
 # =========================
 # WRITE
 # =========================
 
 def _bet_changed(existing: dict, new: dict) -> bool:
     return (
-        existing.get("home") != new.get("home")
-        or existing.get("away") != new.get("away")
+        existing.get("home_bet") != new.get("home_bet")
+        or existing.get("away_bet") != new.get("away_bet")
     )
 
 def save_bets(
@@ -102,7 +193,7 @@ def save_bets(
     # 1. GET EXISTING BETS (ONLY USER)
     existing_res = (
         get_supabase().table("bets")
-        .select("match_id, home, away")
+        .select("match_id, home_bet, away_bet")
         .eq("username", username)
         .execute()
     )
@@ -125,15 +216,15 @@ def save_bets(
             skipped += 1
             continue
 
-        if bet.get("home") is None or bet.get("away") is None:
+        if bet.get("home_bet") is None or bet.get("away_bet") is None:
             skipped += 1
             continue
 
         existing = existing_map.get(match_id)
 
         new_bet = {
-            "home": bet["home"],
-            "away": bet["away"],
+            "home_bet": bet["home_bet"],
+            "away_bet": bet["away_bet"],
         }
 
         # 3. DIFF CHECK
@@ -146,8 +237,8 @@ def save_bets(
             "username": username,
             "match_id": match_id,
 
-            "home": bet["home"],
-            "away": bet["away"],
+            "home_bet": bet["home_bet"],
+            "away_bet": bet["away_bet"],
 
             "status": "pending",
             "points": None,
