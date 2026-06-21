@@ -118,6 +118,7 @@ def get_full_bets_info() -> list[dict]:
         for user in {b["username"] for b in bets}  # dynamic user list from bets
     ]
 
+    records.sort(key=lambda r: int(r.get("match_number") or 0))
     return records
 
 def apply_bets_filters(
@@ -151,96 +152,6 @@ def apply_bets_filters(
                 r for r in result
                 if r.get(key) == value
             ]
-
-    return result
-
-def get_full_bets_info1(
-    username: str | list[str] | None = None,
-) -> list[dict]:
-    """
-    Fetch matches enriched with bet information.
-
-    Args:
-        username:
-            - None -> all users
-            - str -> single user
-            - list[str] -> multiple users
-
-    Returns:
-        List of match+bet records.
-
-        For a specific user, returns all matches (including those without bets).
-
-        For multiple users / all users, returns a row for every
-        (user, match) combination, including missing bets.
-    """
-
-    supabase = get_supabase()
-
-    matches = (
-        supabase.table("matches")
-        .select("*")
-        .execute()
-        .data
-        or []
-    )
-
-    bets_query = supabase.table("bets").select("*")
-
-    if isinstance(username, str):
-        bets_query = bets_query.eq("username", username)
-
-    elif isinstance(username, list):
-        bets_query = bets_query.in_("username", username)
-
-    bets = bets_query.execute().data or []
-
-    # Single-user case
-    if isinstance(username, str):
-        bets_by_match = {
-            bet["match_id"]: bet
-            for bet in bets
-        }
-
-        result = []
-
-        for match in matches:
-            bet = bets_by_match.get(match["match_id"], {})
-
-            result.append({
-                **match,
-                **bet,
-                "username": username,
-            })
-
-        return result
-
-    # Multi-user / all-users case
-    usernames = (
-        username
-        if isinstance(username, list)
-        else sorted({bet["username"] for bet in bets})
-    )
-
-    bets_by_key = {
-        (bet["username"], bet["match_id"]): bet
-        for bet in bets
-    }
-
-    result = []
-
-    for user in usernames:
-        for match in matches:
-            bet = bets_by_key.get(
-                (user, match["match_id"]),
-                {},
-            )
-
-            result.append({
-                **match,
-                **bet,
-                "username": user,
-            })
 
     return result
 
