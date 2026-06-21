@@ -41,6 +41,33 @@ class BetRecord(TypedDict):
 
     updated_at: str
 
+class FullBetInfo(TypedDict):
+    username: str
+    match_id: str
+
+    home_bet: int | None
+    away_bet: int | None
+
+    status: str
+    points: float | None
+
+    updated_at: str
+
+    # Match Snapshot
+    match_number: int
+    stage: str
+    group_name: str
+
+    home_team: str
+    away_team: str
+
+    home_code: str
+    away_code: str
+
+    home_crest: str
+    away_crest: str
+
+    utc_date: str
 
 # =========================
 # READ
@@ -74,7 +101,7 @@ def get_bets(username: str | list[str] | None = None) -> list[BetRecord]:
 
 def get_full_bets_info(
     username: str | list[str] | None = None,
-) -> list[dict]:
+) -> list[FullBetInfo]:
     """
     Fetch matches enriched with bet information.
 
