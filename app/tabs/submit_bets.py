@@ -1,54 +1,47 @@
 import streamlit as st
-from core.matches import get_matches, get_bettable_matches
-from core.bets import get_bets, save_bets
+
+from core.bets import get_full_bets_info, save_bets
+from core.matches import get_bettable_matches
 import core.i18n as pl
 from utils.time import format_datetime, parse_kickoff
 
 
-def render_submit_bets():
+def _render_matches_section(
+    title: str,
+    records: list[dict],
+) -> None:
+    if not records:
+        return
 
-    st.title("Złóż zakłady")
-    st.caption("Typuj wyniki meczów z nadchodzących 72 godzin.")
-    st.divider()
+    st.subheader(title)
 
-    matches = get_matches()
-
-    # Filtrowanie meczów
-    matches_to_bet = get_bettable_matches(matches)
-
-    username = st.session_state["user"]
-    user_bets = get_bets(username)    
-    user_bets_dict = {str(b["match_id"]): b for b in user_bets}
-
-    bets = {}
-
-    for match in matches_to_bet:
-
-        match_id = str(match["match_id"])
-
-        # Sprawdzenie, czy już obstawione
-        existing = user_bets_dict.get(str(match_id), {})
-        is_bet = str(match_id) in user_bets_dict
+    for r in records:
+        match_id = str(r["match_id"])
 
         home_key = f"home_{match_id}"
         away_key = f"away_{match_id}"
 
+        # Initialize state once
         if home_key not in st.session_state:
-            st.session_state.setdefault(home_key, existing.get("home_bet"))
+            st.session_state[home_key] = r.get("home_bet")
 
         if away_key not in st.session_state:
-            st.session_state.setdefault(away_key, existing.get("away_bet"))
+            st.session_state[away_key] = r.get("away_bet")
 
-        home_pl = pl.country(match["home_team"])
-        away_pl = pl.country(match["away_team"])
+        is_bet = (
+            r.get("home_bet") is not None
+            and r.get("away_bet") is not None
+        )
 
-        home_img = match['home_crest']
-        away_img = match['away_crest']
-        
-        stage_pl = pl.stage(match.get("stage", ""))
-        group_pl = pl.group(match.get("group_name", ""))
+        home_pl = pl.country(r["home_team"])
+        away_pl = pl.country(r["away_team"])
 
-        date_pl = format_datetime(parse_kickoff(match["utc_date"]))
+        stage_pl = pl.stage(r.get("stage", ""))
+        group_pl = pl.group(r.get("group_name", ""))
+
+        date_pl = format_datetime(
+            parse_kickoff(r["utc_date"])
+        )
 
         if is_bet:
             st.success("✔ Obstawione")
@@ -56,7 +49,9 @@ def render_submit_bets():
             st.info("✏️ Do obstawienia")
 
         st.caption(
-            f"MECZ #{match['match_number']} | {group_pl or stage_pl} | {date_pl}"
+            f"MECZ #{r['match_number']} | "
+            f"{group_pl or stage_pl} | "
+            f"{date_pl}"
         )
 
         col1, col2, col3, col4, col5 = st.columns(
@@ -65,59 +60,141 @@ def render_submit_bets():
 
         with col1:
             st.markdown(
-                f"<div style='text-align:right'>{home_pl} <img src='{home_img}' width='20'></div>",
-                #f"<div style='text-align:right'>{home_pl}</div>", Prostsza wersja
-                unsafe_allow_html=True
+                (
+                    f"<div style='text-align:right'>"
+                    f"{home_pl} "
+                    f"<img src='{r['home_crest']}' width='20'>"
+                    f"</div>"
+                ),
+                unsafe_allow_html=True,
             )
 
         with col2:
-            home_goals = st.number_input(
-                "Gole H",
+            st.number_input(
+                "Gole gospodarzy",
                 min_value=0,
                 step=1,
                 key=home_key,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
             )
 
         with col3:
             st.markdown(
                 "<div style='text-align:center;padding-top:8px'>:</div>",
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
         with col4:
-            away_goals = st.number_input(
-                "Gole A",
+            st.number_input(
+                "Gole gości",
                 min_value=0,
                 step=1,
                 key=away_key,
-                label_visibility="collapsed"
+                label_visibility="collapsed",
             )
 
         with col5:
             st.markdown(
-                f"<div style='text-align:left'><img src='{away_img}' width='20'> {away_pl}</div>",
-                unsafe_allow_html=True
+                (
+                    f"<div style='text-align:left'>"
+                    f"<img src='{r['away_crest']}' width='20'> "
+                    f"{away_pl}"
+                    f"</div>"
+                ),
+                unsafe_allow_html=True,
             )
 
-        bets[str(match_id)] = {
-            "home_bet": home_goals,
-            "away_bet": away_goals
-        }
-
         st.divider()
-    
-    # Zapis
 
-    if st.button("💾 Zapisz wszystkie typy"):
 
-        result = save_bets(
-            username,
-            bets
+def render_submit_bets():
+    st.title("Złóż zakłady")
+    st.caption("Typuj wyniki meczów z nadchodzących 72 godzin.")
+    st.divider()
+
+    username = st.session_state["user"]
+
+    # Full view
+    records = [
+        r
+        for r in get_full_bets_info()
+        if r["username"] == username
+    ]
+
+    # Only matches available for betting
+    records = get_bettable_matches(records)
+
+    # Keep existing ordering
+    unbet_records = [
+        r
+        for r in records
+        if (
+            r.get("home_bet") is None
+            and r.get("away_bet") is None
+        )
+    ]
+
+    bet_records = [
+        r
+        for r in records
+        if (
+            r.get("home_bet") is not None
+            and r.get("away_bet") is not None
+        )
+    ]
+
+    _render_matches_section(
+        "📝 Do obstawienia",
+        unbet_records,
+    )
+
+    if unbet_records and bet_records:
+        st.divider()
+
+    st.info(
+        "Poniższe mecze zostały już obstawione, ale zakłady mogą zostać zaktualizowane do godziny rozpoczęcia meczu."
         )
 
+    _render_matches_section(
+        "✅ Już obstawione",
+        bet_records,
+    )
+    
+    # Build payload directly from current UI state
+    bets = {}
 
-        st.success(f"✔ Zapisano zmian: {result['changed']}")
+    for r in records:
+        match_id = str(r["match_id"])
+
+        bets[match_id] = {
+            "home_bet": st.session_state.get(
+                f"home_{match_id}"
+            ),
+            "away_bet": st.session_state.get(
+                f"away_{match_id}"
+            ),
+        }
+
+    st.info(
+        "Zapisane zostaną wszystkie nowe i zaktualizowane zakłady widoczne na tej stronie. "
+        "Niezmienione i nieobstawione mecze zostaną pominięte."
+    )
+
+    if st.button(
+        "💾 Zapisz wszystkie typy",
+        use_container_width=True,
+    ):
+        result = save_bets(
+            username=username,
+            bets=bets,
+        )
+
+        st.success(
+            f"✔ Zapisano zmian: {result['changed']}"
+        )
 
         if result["skipped"] > 0:
-            st.warning(f"Pominięto: {result['skipped']} (brak zakładu / nieprawidłowe dane)")
+            st.warning(
+                f"Pominięto: {result['skipped']} "
+                "(brak kompletnego zakładu)"
+            )

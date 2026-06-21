@@ -6,22 +6,22 @@ from core.db import get_supabase
 
 logger = logging.getLogger(__name__)
 
+# -----------------------------
+# MATCH STATE HELPERS
+# -----------------------------
+
 LIVE_STATUSES = {
     "IN_PLAY",
     "PAUSED",
     "EXTRA_TIME",
-    "PENALTY_SHOOTOUT"
+    "PENALTY_SHOOTOUT",
 }
 
 
-# -----------------------------
-# MATCH HELPERS
-# -----------------------------
-
 def match_has_result(match: dict) -> bool:
     """
-    Determines whether match has final (regular time) result.
-    For now only considers FT (flt_home / flt_away).
+    Returns True if match has final score (FT).
+    Only full-time score is considered scorable.
     """
     return (
         match.get("flt_home") is not None
@@ -30,7 +30,9 @@ def match_has_result(match: dict) -> bool:
 
 
 def resolve_bet_status(match_status: str) -> str:
-    """Maps match status to bet status."""
+    """
+    Maps match status → bet status.
+    """
     if match_status in LIVE_STATUSES:
         return "live"
     if match_status == "FINISHED":
@@ -39,28 +41,30 @@ def resolve_bet_status(match_status: str) -> str:
 
 
 # -----------------------------
-# SCORING ENGINE
+# SCORING LOGIC
 # -----------------------------
 
 def calculate_points(bet: dict, match: dict) -> Decimal | None:
     """
-    Calculates betting points:
+    Scoring rules:
     - 4 pts: exact score
     - 2 pts: correct goal difference
     - 1 pt: correct winner
-    - +0.5 bonus: near miss (difference of 1 total goal deviation)
+    - +0.5 bonus: near miss (total deviation = 1 goal)
 
-    Returns Decimal or None if match is not scorable.
+    Returns None if match is not scorable.
     """
 
     mh = match.get("flt_home")
     ma = match.get("flt_away")
 
+    bh = bet.get("home_bet")
+    ba = bet.get("away_bet")
+
     if mh is None or ma is None:
         return None
-
-    bh = bet.get("home")
-    ba = bet.get("away")
+    if bh is None or ba is None:
+        return None
 
     # exact score
     if bh == mh and ba == ma:
@@ -74,11 +78,10 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
     elif (bh > ba) - (bh < ba) == (mh > ma) - (mh < ma):
         points = Decimal("1")
 
-    # no match
     else:
         points = Decimal("0")
 
-    # bonus: near miss (total deviation = 1 goal)
+    # bonus: near miss
     if abs(mh - bh) + abs(ma - ba) == 1:
         points += Decimal("0.5")
 
@@ -90,111 +93,103 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
 # -----------------------------
 
 def fetch_active_bets() -> list[dict]:
-    """Fetch all non-closed bets."""
-    res = get_supabase().table("bets") \
-        .select("*") \
-        .neq("status", "closed") \
+    """
+    Fetch all bets that are not closed.
+    """
+    res = (
+        get_supabase()
+        .table("bets")
+        .select("*")
+        .neq("status", "closed")
         .execute()
+    )
 
     return res.data or []
 
 
 def fetch_matches_map(match_ids: list[str]) -> dict[str, dict]:
     """
-    Batch fetch matches to avoid N+1 queries.
-    Returns dict: match_id -> match
+    Batch fetch matches and return map:
+    match_id → match
     """
     if not match_ids:
         return {}
 
-    res = get_supabase().table("matches") \
-        .select("*") \
-        .in_("match_id", match_ids) \
+    res = (
+        get_supabase()
+        .table("matches")
+        .select("*")
+        .in_("match_id", match_ids)
         .execute()
+    )
 
     return {m["match_id"]: m for m in (res.data or [])}
 
 
 # -----------------------------
-# CORE UPDATE
+# UPDATE SINGLE BET
 # -----------------------------
 
 def update_bet(bet: dict, match: dict) -> dict:
     """
-    Updates single bet based on match state.
+    Updates a single bet based on match state.
 
     Responsibilities:
-    - resolve status
-    - calculate points (if applicable)
-    - update DB only if something changed
-    - return lightweight change summary
+    - resolve bet status
+    - calculate points (if match is scorable)
+    - update DB only if needed
     """
 
     new_status = resolve_bet_status(match["status"])
 
     old_points = bet.get("points")
-    points = old_points
+    new_points = old_points
 
-    scorable = match_has_result(match)
+    # calculate points only when match is finished
+    if match_has_result(match):
+        new_points = calculate_points(bet, match)
 
-    if scorable:
-        points = calculate_points(bet, match)
-
-    # detect changes
-    score_updated = old_points is not None and old_points != points
-    newly_scored = old_points is None and points is not None
-
-    # skip unnecessary writes
-    if (
-        new_status == bet.get("status")
-        and points == old_points
-        and match.get("flt_home") == bet.get("flt_home")
-        and match.get("flt_away") == bet.get("flt_away")
-    ):
+    # skip DB write if nothing changed
+    if new_status == bet.get("status") and new_points == old_points:
         return {
             "checked": True,
-            "scorable": scorable,
+            "scorable": match_has_result(match),
             "score_updated": False,
             "newly_scored": False,
             "status": new_status,
-            "skipped": True
+            "skipped": True,
         }
 
+    # update DB
     get_supabase().table("bets").update({
         "status": new_status,
-        "points": float(points) if points is not None else None,
-        "flt_home": match.get("flt_home"),
-        "flt_away": match.get("flt_away"),
-        "ext_home": match.get("ext_home"),
-        "ext_away": match.get("ext_away"),
-        "pen_home": match.get("pen_home"),
-        "pen_away": match.get("pen_away"),
-        "updated_at": datetime.now(timezone.utc).isoformat()
+        "points": float(new_points) if new_points is not None else None,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }).eq("username", bet["username"]) \
       .eq("match_id", bet["match_id"]) \
       .execute()
 
     return {
         "checked": True,
-        "scorable": scorable,
-        "score_updated": score_updated,
-        "newly_scored": newly_scored,
+        "scorable": match_has_result(match),
+        "score_updated": old_points is not None and old_points != new_points,
+        "newly_scored": old_points is None and new_points is not None,
         "status": new_status,
-        "skipped": False
+        "skipped": False,
     }
 
 
 # -----------------------------
-# MAIN RUNNER
+# MAIN SCORING PIPELINE
 # -----------------------------
 
 def run_scoring() -> dict:
     """
-    Main scoring pipeline:
+    Full scoring pipeline:
 
-    1. Fetch active bets
-    2. Batch fetch matches (avoid N+1)
-    3. Update each bet if needed
+    1. Fetch all active bets
+    2. Batch fetch related matches
+    3. Update bets if needed
     4. Collect stats
     """
 
@@ -229,19 +224,23 @@ def run_scoring() -> dict:
             newly_scored += 1
 
         logger.info(
-            f"Bet {bet['username']} match={bet['match_id']} "
+            f"Bet user={bet['username']} match={bet['match_id']} "
             f"status={result['status']} "
             f"scored={result['scorable']} "
-            f"updated={result['score_updated']}"
+            f"updated={not result['skipped']}"
         )
 
     return {
         "checked": checked,
         "scorable": scorable,
         "score_updated": score_updated,
-        "newly_scored": newly_scored
+        "newly_scored": newly_scored,
     }
 
+
+# -----------------------------
+# ENTRYPOINT
+# -----------------------------
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
