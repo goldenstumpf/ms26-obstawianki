@@ -3,6 +3,20 @@ import streamlit as st
 import core.i18n as pl
 from utils.time import format_datetime, parse_kickoff
 
+def _has_final_score(r: dict) -> bool:
+    return r.get("flt_home") is not None and r.get("flt_away") is not None
+
+def get_points_style(points):
+    if points is None:
+        return ""
+
+    if points >= 4:
+        return "color:#00c853;font-weight:600;"  # jasna zieleń
+    if points > 0:
+        return "color:#D4AF37;font-weight:500;"  # ciemna zieleń 
+
+    return "color:#808080;"
+
 
 def render_match_row(r: dict, mode: str = "edit"):
     """
@@ -106,35 +120,58 @@ def render_match_row(r: dict, mode: str = "edit"):
     # VIEW MODE
     # -------------------------
     else:
+        has_result = r.get("flt_home") is not None and r.get("flt_away") is not None
+
+        home_bet = r.get("home_bet")
+        away_bet = r.get("away_bet")
+
+        # LEFT (home)
         with col2:
+            if home_bet is None:
+                home_text = "-"
+            else:
+                home_text = str(home_bet)
+
             st.markdown(
-                f"<div style='text-align:right'>"
-                f"{r.get('home_bet', '-') }"
-                f"</div>",
-            unsafe_allow_html=True,
-        )
-            
+                f"<div style='text-align:right'>{home_text}</div>",
+                unsafe_allow_html=True,
+            )
+
+        # MIDDLE
         with col3:
             st.markdown(
-                f"<div style='text-align:center'>"
-                f":"
-                f"</div>",
-            unsafe_allow_html=True,
-        )
+                "<div style='text-align:center'>:</div>",
+                unsafe_allow_html=True,
+            )
 
+        # RIGHT (away)
         with col4:
+            if away_bet is None:
+                away_text = "-"
+            else:
+                away_text = str(away_bet)
+
             st.markdown(
-                f"<div style='text-align:left'>"
-                f"{r.get('away_bet', '-') }"
-                f"</div>",
-            unsafe_allow_html=True,
-        )
+                f"<div style='text-align:left'>{away_text}</div>",
+                unsafe_allow_html=True,
+            )
+
+        # FINAL SCORE UNDER ENTIRE ROW
+        if has_result:
+            st.markdown(
+                f"""
+                <div style="text-align:center; font-size:12px; color:gray; margin-top:-8px;">
+                    ({r.get('flt_home')} : {r.get('flt_away')})
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     with col5:
         st.markdown(
             f"<div style='text-align:left'>"
             f"<img src='{r['away_crest']}' width='20'> {away_pl}"
-            f"</div>",
+            f"</div>",  
             unsafe_allow_html=True,
         )
 
@@ -142,6 +179,15 @@ def render_match_row(r: dict, mode: str = "edit"):
     # FOOTER (only report mode)
     # -------------------------
     if mode == "view" and r.get("points") is not None:
-        st.caption(f"🏆 {r['points']} pkt")
+        style = get_points_style(r["points"])
+
+        st.markdown(
+            f"""
+            <div style="text-align:left; margin-top:6px; {style}">
+                🏆 {r['points']} pkt
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.divider()

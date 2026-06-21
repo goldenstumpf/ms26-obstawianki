@@ -1,8 +1,8 @@
 import streamlit as st
 
 from tabs.login import render_login
-from tabs.submit_bets_unif import render_submit_bets
-from tabs.bet_report_unif import render_bet_report
+from tabs.submit_bets import render_submit_bets
+from tabs.bet_report import render_bet_report
 from tabs.total_table import render_bets_table
 
 
