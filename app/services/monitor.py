@@ -3,7 +3,7 @@ from datetime import datetime
 
 from services.fetch_matches import run_fetch_matches
 from services.score_bets import run_scoring
-from core.db import supabase
+from core.db import get_supabase
 
 
 CHECK_INTERVAL_ACTIVE = 60
