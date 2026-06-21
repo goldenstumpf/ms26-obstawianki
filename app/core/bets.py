@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from core.db import get_supabase
-from typing import TypedDict
+from typing import TypedDict, Any
 
 
 # =========================
@@ -41,33 +41,6 @@ class BetRecord(TypedDict):
 
     updated_at: str
 
-class FullBetInfo(TypedDict):
-    username: str
-    match_id: str
-
-    home_bet: int | None
-    away_bet: int | None
-
-    status: str
-    points: float | None
-
-    updated_at: str
-
-    # Match Snapshot
-    match_number: int
-    stage: str
-    group_name: str
-
-    home_team: str
-    away_team: str
-
-    home_code: str
-    away_code: str
-
-    home_crest: str
-    away_crest: str
-
-    utc_date: str
 
 # =========================
 # READ
@@ -99,7 +72,89 @@ def get_bets(username: str | list[str] | None = None) -> list[BetRecord]:
     return res.data or []
 
 
-def get_full_bets_info(
+def get_full_bets_info() -> list[dict]:
+    """
+    Returns full merged dataset:
+    matches × bets (for all users).
+
+    No filtering, no business logic.
+    Pure data layer.
+    """
+
+    supabase = get_supabase()
+
+    # ---------- matches ----------
+    matches = (
+        supabase.table("matches")
+        .select("*")
+        .execute()
+        .data
+        or []
+    )
+
+    # ---------- bets ----------
+    bets = (
+        supabase.table("bets")
+        .select("*")
+        .execute()
+        .data
+        or []
+    )
+
+    # ---------- build index ----------
+    bets_by_key = {
+        (b["username"], b["match_id"]): b
+        for b in bets
+    }
+
+    # ---------- full cartesian merge ----------
+    records = [
+        {
+            **match,
+            **bets_by_key.get((user, match["match_id"]), {}),
+            "username": user,
+        }
+        for match in matches
+        for user in {b["username"] for b in bets}  # dynamic user list from bets
+    ]
+
+    return records
+
+def apply_bets_filters(
+    records: list[dict],
+    filters: dict[str, Any] | None = None,
+) -> list[dict]:
+    """
+    Generic filter layer over merged dataset.
+
+    Supports filtering by ANY column present in merged records.
+    """
+
+    if not filters:
+        return records
+
+    result = records
+
+    for key, value in filters.items():
+        if value is None:
+            continue
+
+        # list filter → IN
+        if isinstance(value, list):
+            value_set = set(value)
+            result = [
+                r for r in result
+                if r.get(key) in value_set
+            ]
+        else:
+            result = [
+                r for r in result
+                if r.get(key) == value
+            ]
+
+    return result
+
+def get_full_bets_info1(
     username: str | list[str] | None = None,
 ) -> list[FullBetInfo]:
     """
@@ -202,17 +257,23 @@ def _bet_changed(existing: dict, new: dict) -> bool:
 def save_bets(
     username: str,
     bets: dict[str, BetInput],
-    matches: list[MatchSnapshot],
 ) -> dict:
     """
-    Saves bets and detects real changes (diff-based upserts).
+    Saves user bets (clean version).
+
+    Bets table is the single source of truth for:
+    - username
+    - match_id
+    - home_bet
+    - away_bet
     """
 
+    supabase = get_supabase()
     now = datetime.now(timezone.utc).isoformat()
 
-    # 1. GET EXISTING BETS (ONLY USER)
+    # 1. existing bets for user
     existing_res = (
-        get_supabase().table("bets")
+        supabase.table("bets")
         .select("match_id, home_bet, away_bet")
         .eq("username", username)
         .execute()
@@ -223,67 +284,40 @@ def save_bets(
         for r in (existing_res.data or [])
     }
 
-    match_map = {str(m["match_id"]): m for m in matches}
-
     rows = []
     skipped = 0
     changed = 0
 
-    # 2. BUILD UPSERT LIST ONLY FOR CHANGED BETS
     for match_id, bet in bets.items():
-        match = match_map.get(match_id)
-        if not match:
-            skipped += 1
-            continue
 
+        # skip empty bets
         if bet.get("home_bet") is None or bet.get("away_bet") is None:
             skipped += 1
             continue
 
-        existing = existing_map.get(match_id)
+        existing = existing_map.get(str(match_id))
 
         new_bet = {
             "home_bet": bet["home_bet"],
             "away_bet": bet["away_bet"],
         }
 
-        # 3. DIFF CHECK
         if existing and not _bet_changed(existing, new_bet):
-            continue  # no real change
+            continue
 
         changed += 1
 
         rows.append({
             "username": username,
             "match_id": match_id,
-
             "home_bet": bet["home_bet"],
             "away_bet": bet["away_bet"],
-
-            "status": "pending",
             "points": None,
             "updated_at": now,
-
-            # snapshot
-            "match_number": match["match_number"],
-            "stage": match["stage"],
-            "group_name": match["group_name"],
-
-            "home_team": match["home_team"],
-            "away_team": match["away_team"],
-
-            "home_code": match["home_code"],
-            "away_code": match["away_code"],
-
-            "home_crest": match["home_crest"],
-            "away_crest": match["away_crest"],
-
-            "utc_date": match["utc_date"],
         })
 
-    # 4. WRITE ONLY CHANGED
     if rows:
-        get_supabase().table("bets").upsert(
+        supabase.table("bets").upsert(
             rows,
             on_conflict="username,match_id"
         ).execute()
