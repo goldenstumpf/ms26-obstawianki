@@ -108,7 +108,7 @@ def _render_matches_section(
 
 
 def render_submit_bets():
-    st.title("Złóż zakłady")
+    st.title("⚽ Złóż zakłady")
     st.caption("Typuj wyniki meczów z nadchodzących 72 godzin.")
     st.divider()
 
