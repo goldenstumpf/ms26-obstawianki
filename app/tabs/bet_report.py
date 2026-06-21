@@ -11,8 +11,6 @@ def render_bet_report():
     #bets = get_bets(username)
     bets = get_full_bets_info(username)
 
-    print(bets)
-
     live = []
     pending = []
     closed = []

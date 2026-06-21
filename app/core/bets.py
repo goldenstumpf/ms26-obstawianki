@@ -156,7 +156,7 @@ def apply_bets_filters(
 
 def get_full_bets_info1(
     username: str | list[str] | None = None,
-) -> list[FullBetInfo]:
+) -> list[dict]:
     """
     Fetch matches enriched with bet information.
 
