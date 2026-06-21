@@ -41,13 +41,6 @@ class BetRecord(TypedDict):
 
     updated_at: str
 
-    # snapshot meczu
-    group_name: str
-    home_crest: str
-    away_crest: str
-    home_code: str
-    away_code: str
-    utc_date: str
 
 # =========================
 # READ
