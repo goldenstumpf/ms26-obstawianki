@@ -18,13 +18,13 @@ def render_submit_bets():
 
     username = st.session_state["user"]
     user_bets = get_bets(username)    
-    user_bets_dict = {b["match_id"]: b for b in user_bets}
+    user_bets_dict = {str(b["match_id"]): b for b in user_bets}
 
     bets = {}
 
     for match in matches_to_bet:
 
-        match_id = match["match_id"]
+        match_id = str(match["match_id"])
 
         # Sprawdzenie, czy już obstawione
         existing = user_bets_dict.get(str(match_id), {})
@@ -34,10 +34,10 @@ def render_submit_bets():
         away_key = f"away_{match_id}"
 
         if home_key not in st.session_state:
-            st.session_state[home_key] = existing.get("home_bet", None)
+            st.session_state.setdefault(home_key, existing.get("home_bet"))
 
         if away_key not in st.session_state:
-            st.session_state[away_key] = existing.get("away_bet", None)
+            st.session_state.setdefault(away_key, existing.get("away_bet"))
 
         home_pl = pl.country(match["home_team"])
         away_pl = pl.country(match["away_team"])
@@ -106,8 +106,6 @@ def render_submit_bets():
         }
 
         st.divider()
-
-    attempted = len(bets)
     
     # Zapis
 
@@ -115,8 +113,7 @@ def render_submit_bets():
 
         result = save_bets(
             username,
-            bets,
-            matches_to_bet
+            bets
         )
 
 
@@ -124,7 +121,3 @@ def render_submit_bets():
 
         if result["skipped"] > 0:
             st.warning(f"Pominięto: {result['skipped']} (brak zakładu / nieprawidłowe dane)")
-
-        # Nie przygotowano funkcjonalności informacji nt. pominięcia rozpoczętych meczów przy zapisie.
-        #if result["skipped"] > 0:
-        #    st.warning(f"✔ Zapisano tylko: {saved} typów ({skipped} z meczów już rozpoczęto).")
