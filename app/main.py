@@ -3,7 +3,8 @@ import streamlit as st
 from tabs.login import render_login
 from tabs.submit_bets import render_submit_bets
 from tabs.bet_report import render_bet_report
-from tabs.total_table import render_bets_table
+#from tabs.total_table import render_bets_table
+from tabs.table import render_table as render_bets_table
 
 
 st.set_page_config(

@@ -48,7 +48,7 @@ def render_match_row(r: dict, mode: str = "edit"):
 
     else:
         if r.get("status") in {"IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"}:
-            st.markdown("🔴 LIVE")
+            st.markdown("🔴 Na żywo")
         elif r.get("points") is not None:
             st.markdown("⚫ Zakończony")
         else:
@@ -66,13 +66,19 @@ def render_match_row(r: dict, mode: str = "edit"):
     # -------------------------
     # ROW LAYOUT
     # -------------------------
-    col1, col2, col3, col4, col5 = st.columns([5, 1.2, 0.5, 1.2, 5])
+    if mode == "edit":
+        col1, col2, col3, col4, col5 = st.columns([5, 1.2, 0.5, 1.2, 5])
+    else:
+        col1, col3, col5 = st.columns([5, 2, 5])
 
     with col1:
         st.markdown(
-            f"<div style='text-align:right'>"
-            f"{home_pl} <img src='{r['home_crest']}' width='20'>"
-            f"</div>",
+            f"""
+            <div style="display:flex; align-items:center; gap:6px;">
+                <img src="{r['home_crest']}" width="20">
+                <span>{home_pl}</span>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
 
@@ -120,41 +126,30 @@ def render_match_row(r: dict, mode: str = "edit"):
     # VIEW MODE
     # -------------------------
     else:
+
         has_result = r.get("flt_home") is not None and r.get("flt_away") is not None
 
         home_bet = r.get("home_bet")
         away_bet = r.get("away_bet")
 
-        # LEFT (home)
-        with col2:
+
+        # MIDDLE
+        with col3:
             if home_bet is None:
                 home_text = "-"
             else:
                 home_text = str(home_bet)
-
-            st.markdown(
-                f"<div style='text-align:right'>{home_text}</div>",
-                unsafe_allow_html=True,
-            )
-
-        # MIDDLE
-        with col3:
-            st.markdown(
-                "<div style='text-align:center'>:</div>",
-                unsafe_allow_html=True,
-            )
-
-        # RIGHT (away)
-        with col4:
             if away_bet is None:
                 away_text = "-"
             else:
                 away_text = str(away_bet)
 
             st.markdown(
-                f"<div style='text-align:left'>{away_text}</div>",
+                f"<div style='text-align:center'>{home_text} : {away_text}</div>",
                 unsafe_allow_html=True,
             )
+
+
 
         # FINAL SCORE UNDER ENTIRE ROW
         if has_result:
@@ -169,8 +164,8 @@ def render_match_row(r: dict, mode: str = "edit"):
 
     with col5:
         st.markdown(
-            f"<div style='text-align:left'>"
-            f"<img src='{r['away_crest']}' width='20'> {away_pl}"
+            f"<div style='text-align:right'>"
+            f"{away_pl} <img src='{r['away_crest']}' width='20'>"
             f"</div>",  
             unsafe_allow_html=True,
         )
