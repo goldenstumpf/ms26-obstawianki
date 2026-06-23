@@ -150,13 +150,13 @@ def update_bet(bet: dict, match: dict) -> dict:
     if match_has_result(match):
         new_points = calculate_points(bet, match)
 
-    logger.info(
-        f"user={bet['username']} match={bet['match_id']} "
-        f"\n\tbet={bet['home_bet']}:{bet['away_bet']} "
-        f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
-        f"\n\tstatus={bet.get('status')}->{new_status} "
-        f"\n\tpoints={old_points}->{new_points}"
-    )
+    #logger.info(
+    #    f"user={bet['username']} match={bet['match_id']} "
+    #    f"\n\tbet={bet['home_bet']}:{bet['away_bet']} "
+    #    f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
+    #    f"\n\tstatus={bet.get('status')}->{new_status} "
+    #    f"\n\tpoints={old_points}->{new_points}"
+    #)
 
     # skip DB write if nothing changed
     if new_status == bet.get("status") and new_points == old_points:
@@ -178,13 +178,13 @@ def update_bet(bet: dict, match: dict) -> dict:
       .eq("match_id", bet["match_id"]) \
       .execute()
     
-    logger.info(
-        f"UPDATE user={bet['username']} match={bet['match_id']} "
-        f"\n\tbet={bet['home_bet']}:{bet['away_bet']}"
-        f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
-        f"\n\tstatus={bet.get('status')}->{new_status} "
-        f"\n\tpoints={old_points}->{new_points}"
-    )
+    #logger.info(
+    #    f"UPDATE user={bet['username']} match={bet['match_id']} "
+    #    f"\n\tbet={bet['home_bet']}:{bet['away_bet']}"
+    #    f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
+    #    f"\n\tstatus={bet.get('status')}->{new_status} "
+    #    f"\n\tpoints={old_points}->{new_points}"
+    #)
 
     return {
         "checked": True,
