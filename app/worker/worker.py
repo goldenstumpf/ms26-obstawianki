@@ -1,8 +1,3 @@
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 import logging
 import time
 
@@ -10,10 +5,10 @@ from datetime import datetime
 from datetime import timezone
 from datetime import timedelta
 
-from services.fetch_matches import run_fetch_matches
-from services.score_bets import run_scoring
+from app.services.fetch_matches import run_fetch_matches
+from app.services.score_bets import run_scoring
 
-from core.db import get_supabase
+from app.core.db import get_supabase
 
 
 logging.basicConfig(
