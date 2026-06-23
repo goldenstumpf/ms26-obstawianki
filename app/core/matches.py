@@ -35,6 +35,8 @@ class Match(TypedDict):
 
     home_code: str
     away_code: str
+    
+    minute: Optional[int]
 
 # =========================
 # READ

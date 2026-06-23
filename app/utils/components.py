@@ -51,17 +51,20 @@ def render_match_row(r: dict, mode: str = "edit"):
     else:
         if r.get("status") == "live":
             st.markdown("")
-            st.markdown(
-                f"""
-                <div>
-                    🔴 Na żywo
-                    <span style="color:red; font-weight:600; text-align:center; margin-left:24px;">
-                        {minute}'
-                    </span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            if minute:
+                st.markdown(
+                    f"""
+                    <div>
+                        🔴 Na żywo
+                        <span style="color:red; font-weight:600; text-align:center; margin-left:24px;">
+                            {minute}'
+                        </span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            else:
+               st.markdown("🔴 Na żywo") 
         elif r.get("status") == "closed":
             st.markdown("⚫ Zakończony")
         else:

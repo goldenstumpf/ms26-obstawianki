@@ -59,7 +59,7 @@ def transform_match(match: dict) -> dict:
     """
     Normalize API match → Supabase row.
     """
-
+    print(match)
     score = match.get("score", {})
     ft = score.get("fullTime", {}) or {}
     et = score.get("extraTime", {}) or {}
@@ -86,6 +86,7 @@ def transform_match(match: dict) -> dict:
         "group_name": match.get("group"),
 
         "duration": score.get("duration"),
+        "minute": score.get("minute"),
 
         # full time
         "flt_home": ft.get("home"),

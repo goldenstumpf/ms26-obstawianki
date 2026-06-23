@@ -4,6 +4,7 @@ import logging
 
 from core.db import get_supabase
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # -----------------------------
@@ -100,6 +101,7 @@ def fetch_active_bets() -> list[dict]:
         get_supabase()
         .table("bets")
         .select("*")
+        .eq("match_id", "test")
         .neq("status", "closed")
         .execute()
     )
@@ -145,9 +147,17 @@ def update_bet(bet: dict, match: dict) -> dict:
     old_points = bet.get("points")
     new_points = old_points
 
-    # calculate points only when match is finished
+    # calculate points only when match has result
     if match_has_result(match):
         new_points = calculate_points(bet, match)
+
+    logger.info(
+        f"user={bet['username']} match={bet['match_id']} "
+        f"\n\tbet={bet['home_bet']}:{bet['away_bet']} "
+        f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
+        f"\n\tstatus={bet.get('status')}->{new_status} "
+        f"\n\tpoints={old_points}->{new_points}"
+    )
 
     # skip DB write if nothing changed
     if new_status == bet.get("status") and new_points == old_points:
@@ -168,6 +178,14 @@ def update_bet(bet: dict, match: dict) -> dict:
     }).eq("username", bet["username"]) \
       .eq("match_id", bet["match_id"]) \
       .execute()
+    
+    logger.info(
+        f"UPDATE user={bet['username']} match={bet['match_id']} "
+        f"\n\tbet={bet['home_bet']}:{bet['away_bet']}"
+        f"\n\tscore={match.get('flt_home')}:{match.get('flt_away')} "
+        f"\n\tstatus={bet.get('status')}->{new_status} "
+        f"\n\tpoints={old_points}->{new_points}"
+    )
 
     return {
         "checked": True,
@@ -189,7 +207,7 @@ def run_scoring() -> dict:
 
     1. Fetch all active bets
     2. Batch fetch related matches
-    3. Update bets if needed
+    3. Update bets if needed    
     4. Collect stats
     """
 
@@ -223,13 +241,6 @@ def run_scoring() -> dict:
         if result["newly_scored"]:
             newly_scored += 1
 
-        logger.info(
-            f"Bet user={bet['username']} match={bet['match_id']} "
-            f"status={result['status']} "
-            f"scored={result['scorable']} "
-            f"updated={not result['skipped']}"
-        )
-
     return {
         "checked": checked,
         "scorable": scorable,
@@ -243,7 +254,7 @@ def run_scoring() -> dict:
 # -----------------------------
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
 
     result = run_scoring()
     print("Scoring done:", result)
