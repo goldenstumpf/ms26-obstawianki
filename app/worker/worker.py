@@ -28,7 +28,7 @@ LIVE_STATUSES = {
     "PAUSED",
     "EXTRA_TIME",
     "PENALTY_SHOOTOUT",
-    "LIVE,"
+    "LIVE",
 }
 
 
@@ -49,7 +49,7 @@ def get_live_matches():
 
 
 def get_next_match():
-    now = (datetime.now(timezone.utc) - timedelta(minutes=90)).isoformat()
+    now = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
 
     res = (
         get_supabase()
