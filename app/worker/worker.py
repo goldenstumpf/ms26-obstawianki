@@ -28,6 +28,7 @@ LIVE_STATUSES = {
     "PAUSED",
     "EXTRA_TIME",
     "PENALTY_SHOOTOUT",
+    "LIVE,"
 }
 
 
