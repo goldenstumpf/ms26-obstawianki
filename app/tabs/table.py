@@ -1,29 +1,23 @@
 import streamlit as st
 from core.bets import get_full_bets_info
 from utils.formatters import format_username
+from collections import defaultdict
 
 
-def is_completed(r: dict) -> bool:
-    return r.get("points") is not None
 
 
 def build_table(records: list[dict]) -> dict:
-    table = {}
+    table = defaultdict(lambda: {"matches": 0, "points": 0.0})
 
     for r in records:
-        if not is_completed(r):
+        if not r.get("status") == "closed":
             continue
 
         user = r["username"]
-
-        if user not in table:
-            table[user] = {"matches": 0, "points": 0.0}
-
         table[user]["matches"] += 1
-        table[user]["points"] += float(r["points"])
+        table[user]["points"] += float(r.get("points"))
 
-    return table
-
+    return dict(table)
 
 def render_table():
     st.title("📋 Tabela")
@@ -37,7 +31,7 @@ def render_table():
 
     sorted_users = sorted(
         table.items(),
-        key=lambda x: x[1]["points"],
+        key=lambda x: float(x[1].get("points") or 0),
         reverse=True
     )
 
@@ -79,7 +73,7 @@ def render_table():
                 <div style="width:40px">{i}</div>
                 <div style="flex:2;font-weight:500">{format_username(user)}</div>
                 <div style="flex:1;text-align:center;">{matches}</div>
-                <div style="flex:1;text-align:center;;font-weight:600">{round(points,2)}</div>
+                <div style="flex:1;text-align:center;font-weight:600">{round(points,2)}</div>
                 <div style="flex:1;text-align:center;">{round(avg,4):.4f}</div>
             </div>
             """,
