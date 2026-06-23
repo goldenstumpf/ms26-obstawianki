@@ -22,7 +22,6 @@ def fetch_matches(competition_id: int = 2000) -> list[dict]:
     Returns normalized list sorted by utcDate.
     """
 
-    print(API_KEY)
     if not API_KEY:
         raise RuntimeError("FOOTBALL_API_KEY is missing")
 

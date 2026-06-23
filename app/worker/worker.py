@@ -44,7 +44,7 @@ def get_live_matches():
 
 
 def get_next_match():
-    now = datetime.now(timezone.utc).isoformat()
+    now = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
 
     res = (
         get_supabase()
