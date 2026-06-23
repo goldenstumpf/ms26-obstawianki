@@ -25,6 +25,8 @@ def render_match_row(r: dict, mode: str = "edit"):
     - "view" → read-only (report)
     """
 
+    minute = 57
+
     match_id = str(r["match_id"])
 
     home_pl = pl.country(r["home_team"])
@@ -47,9 +49,20 @@ def render_match_row(r: dict, mode: str = "edit"):
             st.info("✏️ Do obstawienia")
 
     else:
-        if r.get("status") in {"IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"}:
-            st.markdown("🔴 Na żywo")
-        elif r.get("points") is not None:
+        if r.get("status") == "live":
+            st.markdown("")
+            st.markdown(
+                f"""
+                <div>
+                    🔴 Na żywo
+                    <span style="color:red; font-weight:600; text-align:center; margin-left:24px;">
+                        {minute}'
+                    </span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        elif r.get("status") == "closed":
             st.markdown("⚫ Zakończony")
         else:
             st.markdown("🟡 Nadchodzący")
@@ -73,14 +86,10 @@ def render_match_row(r: dict, mode: str = "edit"):
 
     with col1:
         st.markdown(
-            f"""
-            <div style="display:flex; align-items:center; gap:6px;">
-                <img src="{r['home_crest']}" width="20">
-                <span>{home_pl}</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            f"<div style='text-align:left'>"
+            f"<img src='{r['home_crest']}' width='20'> {home_pl}"
+            f"</div>", unsafe_allow_html=True,
+            )
 
     # -------------------------
     # EDIT MODE
