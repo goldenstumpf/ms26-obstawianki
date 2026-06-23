@@ -1,10 +1,16 @@
 import streamlit as st
 from collections import defaultdict
 
-from core.bets import get_full_bets_info
+from core.bets import get_full_bets_info, apply_bets_filters
 from utils.formatters import format_username
 from utils.components import render_match_row
 
+LIVE_STATUSES = {
+    "IN_PLAY",
+    "PAUSED",
+    "EXTRA_TIME",
+    "PENALTY_SHOOTOUT",
+}
 
 # =========================================================
 # TABLE HELPERS
@@ -46,6 +52,12 @@ def build_rank_map(ranking):
 def ranking(table):
     return sorted(table.items(), key=lambda x: x[1]["points"], reverse=True)
 
+def get_user_bet(records, user, match_id):
+    return next(
+        (r for r in records
+         if r["username"] == user and r.get("match_id") == match_id),
+        None
+    )
 
 # =========================================================
 # TABLE ROW (SAFE STREAMLIT - NO BROKEN HTML)
@@ -87,14 +99,26 @@ def render_row(rank, user, bet, match_points, total_points, delta):
 
 def render_live_tab():
 
-    st.title("🔴 Centrum")
+    st.title("🔴 Studio")
 
     records = get_full_bets_info()
+
+    username = st.session_state["user"]
+
+    user_records = apply_bets_filters(
+        records,
+        {"username": username}
+    )
 
     # -------------------------
     # TOP: MATCH
     # -------------------------
-    live_match = next((r for r in records if r.get("status") == "live"), None)
+    live_match = next((r for r in user_records if r.get("status") == "live"), None)
+    if live_match is None:
+        live_match = next(
+            (r for r in user_records if r.get("status") in LIVE_STATUSES),
+            None
+        )
 
     if live_match:
         render_match_row(live_match, mode="view")
