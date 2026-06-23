@@ -10,7 +10,6 @@ from app.services.score_bets import run_scoring
 
 from app.core.db import get_supabase
 
-
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("hpack").setLevel(logging.WARNING)
@@ -49,7 +48,7 @@ def get_live_matches():
 
 
 def get_next_match():
-    now = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
+    now = (datetime.now(timezone.utc) - timedelta(minutes=90)).isoformat()
 
     res = (
         get_supabase()
