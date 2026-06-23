@@ -87,7 +87,7 @@ def render_row(rank, user, bet, match_points, total_points, delta):
 
 def render_live_tab():
 
-    st.title("🔴 LIVE")
+    st.title("🔴 Centrum")
 
     records = get_full_bets_info()
 
@@ -99,7 +99,7 @@ def render_live_tab():
     if live_match:
         render_match_row(live_match, mode="view")
     else:
-        st.info("Brak meczu LIVE")
+        st.info("Brak trwających meczów")
 
     st.divider()
 
@@ -126,9 +126,9 @@ def render_live_tab():
         ">
             <div style="width:35px">#</div>
             <div style="flex:2">Gracz</div>
-            <div style="flex:1;text-align:center;">Typ</div>
-            <div style="flex:1;text-align:center;">Mecz</div>
-            <div style="flex:1;text-align:center;">Suma</div>
+            <div style="flex:1;text-align:center;">Zakład</div>
+            <div style="flex:1;text-align:center;">Pkt za Zakład</div>
+            <div style="flex:1;text-align:center;">Suma Punktów</div>
             <div style="flex:1;text-align:center;">+/-</div>
         </div>
         """,
@@ -156,7 +156,7 @@ def render_live_tab():
             delta = "🆕"
         else:
             diff = closed_pos - live_pos
-            delta = f"🔼 {diff}" if diff > 0 else f"🔽 {abs(diff)}" if diff < 0 else "⏺️"
+            delta = f"🟢 +{diff}" if diff > 0 else f"🔴 -{abs(diff)}" if diff < 0 else "⚪ =0"
 
         render_row(
             rank=live_pos,

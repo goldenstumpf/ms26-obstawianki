@@ -5,6 +5,7 @@ from tabs.submit_bets import render_submit_bets
 from tabs.bet_report import render_bet_report
 from tabs.table import render_table as render_bets_table
 from tabs.live_center import render_live_tab
+from tabs import dashboard
 
 st.set_page_config(
     page_title="Zielone Zakłady 2026",
@@ -18,7 +19,7 @@ if "user" not in st.session_state:
 
 choice = st.sidebar.radio(
     "Menu",
-    ["Złóż zakłady", "Mój raport", "Tabela", "Centrum - Na żywo"]
+    ["Złóż zakłady", "Mój raport", "Tabela", "Centrum - Na żywo",]
 )
 
 if choice == "Złóż zakłady":

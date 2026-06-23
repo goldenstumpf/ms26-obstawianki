@@ -25,7 +25,7 @@ def render_match_row(r: dict, mode: str = "edit"):
     - "view" → read-only (report)
     """
 
-    minute = 57
+    minute = r["minute"]
 
     match_id = str(r["match_id"])
 
