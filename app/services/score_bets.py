@@ -101,7 +101,6 @@ def fetch_active_bets() -> list[dict]:
         get_supabase()
         .table("bets")
         .select("*")
-        .eq("match_id", "test")
         .neq("status", "closed")
         .execute()
     )
