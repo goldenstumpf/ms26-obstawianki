@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import logging
 
-from core.db import get_supabase
+from app.core.db import get_supabase
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import os
 import requests
 import logging
 
-from core.db import get_supabase
+from app.core.db import get_supabase
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def transform_match(match: dict) -> dict:
     """
     Normalize API match → Supabase row.
     """
-    
+
     score = match.get("score", {})
     ft = score.get("fullTime", {}) or {}
     et = score.get("extraTime", {}) or {}
