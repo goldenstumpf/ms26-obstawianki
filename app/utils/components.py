@@ -65,7 +65,7 @@ def render_match_row(r: dict, mode: str = "edit"):
                 )
             else:
                st.markdown("🔴 Na żywo") 
-        elif r.get("status") == "closed":
+        elif r.get("status") in ["closed", "FINISHED"]:
             st.markdown("⚫ Zakończony")
         else:
             st.markdown("🟡 Nadchodzący")

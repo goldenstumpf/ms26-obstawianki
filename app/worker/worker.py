@@ -80,9 +80,9 @@ def compute_sleep_seconds() -> int:
 
     if live_matches:
         logger.info(
-            f"{len(live_matches)} live match(es) found -> next run in 60 sec"
+            f"{len(live_matches)} live match(es) found -> next run in 3 mins"
         )
-        return 60
+        return 180
 
     next_match = get_next_match()
 
