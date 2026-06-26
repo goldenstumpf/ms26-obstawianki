@@ -2,34 +2,25 @@ import streamlit as st
 
 from app.data.full_bets_info import get_full_bets_info
 from app.utils.components import render_match_row
+from app.utils.match_state import LIVE_STATUSES, classify_match_state
 
-# -----------------------------
-# FILTER LOGIC
-# -----------------------------
-
-LIVE_STATUSES = {
-    "IN_PLAY",
-    "PAUSED",
-    "EXTRA_TIME",
-    "PENALTY_SHOOTOUT",
-}
 
 
 def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
-    is_bet = (
-        r.get("home_bet") is not None
-        and r.get("away_bet") is not None
-    )
+    """Filter records shown in bet report.
 
-    has_result = (
-        r.get("flt_home") is not None
-        and r.get("flt_away") is not None
-    )
+    - include_upcoming=False: show LIVE + FINISHED
+    - include_upcoming=True: show LIVE + FINISHED + UPCOMING
+
+    Note: flt_* may appear during live; we rely on classify_match_state().
+    """
+
+    state = classify_match_state(r)
 
     if include_upcoming:
-        return is_bet or has_result
+        return True
 
-    return has_result
+    return state in {"LIVE", "FINISHED"}
 
 
 # -----------------------------
@@ -57,7 +48,8 @@ def sort_matches(records: list[dict], mode: str) -> list[dict]:
         return r.get("flt_home") is not None and r.get("flt_away") is not None
 
     def is_live(r: dict) -> bool:
-        return r.get("status") in LIVE_STATUSES
+        # status can be match live status (caps) OR UI live marker (lowercase)
+        return (r.get("status") == "live") or (r.get("status") in LIVE_STATUSES)
 
     if mode == "Od najbliższych 🕒":
         upcoming = [r for r in records if (not has_result(r)) and (not is_live(r))]
@@ -123,6 +115,7 @@ def render_bet_report():
             "Od najsłabszych 📉",
         ],
         index=0,
+        help="Od najbliższych: nadchodzące↑ → na żywo → zakończone↓; Od najnowszych: data↓; Od najstarszych: data↑; Od najlepszych: pkt↓; Od najsłabszych: pkt↑",
     )
 
     show_upcoming = st.toggle(

@@ -5,6 +5,7 @@ from pathlib import Path
 from app.data.demo import demo_mode_enabled
 from app.utils import i18n as pl
 from app.utils.time import format_datetime, parse_kickoff
+from app.utils.match_state import classify_match_state
 
 # -------------------------
 # DIP / KNOCKOUT HELPERS
@@ -261,7 +262,11 @@ def render_match_row(r: dict, mode: str = "edit"):
             st.info("✏️ Do obstawienia")
 
     else:
-        if r.get("status") == "live":
+        # In report view, label status using the same classifier as the bet report.
+        # This avoids relying on raw status strings, which can be overwritten during merge.
+        state = classify_match_state(r)
+
+        if state == "LIVE":
             st.markdown("")
             if minute:
                 st.markdown(
@@ -277,7 +282,7 @@ def render_match_row(r: dict, mode: str = "edit"):
                 )
             else:
                st.markdown("🔴 Na żywo") 
-        elif r.get("status") in ["closed", "FINISHED"]:
+        elif state == "FINISHED":
             st.markdown("⚫ Zakończony")
         else:
             st.markdown("🟡 Nadchodzący")
