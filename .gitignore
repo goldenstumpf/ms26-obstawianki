@@ -20,5 +20,11 @@ __pycache__/
 # Demo DB temp files (atomic writes)
 demo_db/*.tmp
 
+# Generated outputs / artifacts
+outputs/
+
+# Len workspace (auto-generated)
+.lenwork/
+
 # Safe-Coder checkpoints (auto-generated)
 .lencode-shadow/
