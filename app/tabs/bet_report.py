@@ -39,6 +39,11 @@ def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
 def sort_matches(records: list[dict], mode: str) -> list[dict]:
     """
     Stabilne sortowanie raportu betów.
+
+    Tryb "Od najbliższych" sortuje kategoriami:
+    1) nadchodzące (od najbliższego terminu),
+    2) na żywo,
+    3) zakończone (od najnowszego).
     """
 
     def safe_points(r):
@@ -47,6 +52,26 @@ def sort_matches(records: list[dict], mode: str) -> list[dict]:
     def safe_date(r):
         # fallback żeby None nie rozwalało sortowania
         return r.get("utc_date") or ""
+
+    def has_result(r: dict) -> bool:
+        return r.get("flt_home") is not None and r.get("flt_away") is not None
+
+    def is_live(r: dict) -> bool:
+        return r.get("status") in LIVE_STATUSES
+
+    if mode == "Od najbliższych 🕒":
+        upcoming = [r for r in records if (not has_result(r)) and (not is_live(r))]
+        live = [r for r in records if (not has_result(r)) and is_live(r)]
+        finished = [r for r in records if has_result(r)]
+
+        # upcoming: closest kickoff first (ascending)
+        upcoming = sorted(upcoming, key=safe_date)
+        # live: keep consistent ordering
+        live = sorted(live, key=safe_date)
+        # finished: same as "Od najnowszych" (descending)
+        finished = sorted(finished, key=safe_date, reverse=True)
+
+        return upcoming + live + finished
 
     if mode == "Od najnowszych ⏳":
         return sorted(records, key=safe_date, reverse=True)
@@ -90,7 +115,13 @@ def render_bet_report():
     # -------------------------
     sort_mode = st.selectbox(
         "Sortowanie",
-        ["Od najnowszych ⏳", "Od najstarszych ⌛", "Od najlepszych 📈", "Od najsłabszych 📉"],
+        [
+            "Od najbliższych 🕒",
+            "Od najnowszych ⏳",
+            "Od najstarszych ⌛",
+            "Od najlepszych 📈",
+            "Od najsłabszych 📉",
+        ],
         index=0,
     )
 

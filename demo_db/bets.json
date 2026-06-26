@@ -234,10 +234,10 @@
     "match_id": "m7",
     "home_bet": 0,
     "away_bet": 0,
-    "dip": "karne: ENG",
+    "dip": "karne: BRA",
     "points": null,
     "status": "pending",
-    "updated_at": "2026-06-26T09:02:19.954000Z"
+    "updated_at": "2026-06-26T14:29:43.319885Z"
   },
   {
     "username": "alice",
@@ -248,5 +248,105 @@
     "points": null,
     "status": "pending",
     "updated_at": "2026-06-26T10:39:00.561935Z"
+  },
+  {
+    "username": "alice",
+    "match_id": "dip_ko_01",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: HOME"
+  },
+  {
+    "username": "bob",
+    "match_id": "dip_ko_01",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: AWAY"
+  },
+  {
+    "username": "alice",
+    "match_id": "dip_ko_02",
+    "home_bet": 2,
+    "away_bet": 1,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "120"
+  },
+  {
+    "username": "bob",
+    "match_id": "dip_ko_02",
+    "home_bet": 3,
+    "away_bet": 0,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:27:38.286000Z",
+    "dip": "120"
+  },
+  {
+    "username": "alice",
+    "match_id": "dip_ko_03",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: HOME"
+  },
+  {
+    "username": "bob",
+    "match_id": "dip_ko_03",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: AWAY"
+  },
+  {
+    "username": "charlie",
+    "match_id": "dip_ko_03",
+    "home_bet": 3,
+    "away_bet": 0,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "90"
+  },
+  {
+    "username": "alice",
+    "match_id": "dip_ko_04",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: AWAY"
+  },
+  {
+    "username": "bob",
+    "match_id": "dip_ko_04",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "closed",
+    "points": null,
+    "updated_at": "2026-06-26T14:26:40.533000Z",
+    "dip": "karne: HOME"
+  },
+  {
+    "username": "bob",
+    "match_id": "m6",
+    "home_bet": 2,
+    "away_bet": 1,
+    "dip": "120",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T14:29:43.319885Z"
   }
 ]

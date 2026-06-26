@@ -153,16 +153,28 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
 
     else:
         # rezultat
-        bet_sign = _sign(bh - ba)
-        match_sign = _sign(mh - ma)
-
         if not is_knockout:
-            # group stage: allow draw rezultat
+            # group stage: allow draw rezultat based purely on full-time score
+            bet_sign = _sign(bh - ba)
+            match_sign = _sign(mh - ma)
             if bet_sign == match_sign:
                 base = Decimal("1")
         else:
-            # knockout: rezultat only makes sense for non-draw bets
-            if bet_sign != 0 and bet_sign == match_sign:
+            # knockout: a winner must exist; resolve winner for bet & match
+            # - bet winner is from score sign if non-draw, otherwise from penalty DIP ('karne: XXX')
+            # - match winner is from penalties when present, fallback to full-time (pre-penalties) score
+            match_winner = _penalty_winner_code(match)
+
+            bet_winner: str | None
+            bet_sign = _sign(bh - ba)
+            if bet_sign > 0:
+                bet_winner = match.get("home_code")
+            elif bet_sign < 0:
+                bet_winner = match.get("away_code")
+            else:
+                bet_winner = _parse_penalty_dip(dip)
+
+            if match_winner and bet_winner and str(match_winner).upper() == str(bet_winner).upper():
                 base = Decimal("1")
 
     points = base
@@ -175,9 +187,11 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
     if is_knockout:
         penalty_pick = _parse_penalty_dip(dip)
         if penalty_pick:
-            winner = _penalty_winner_code(match)
-            if winner and penalty_pick.upper() == str(winner).upper():
-                points += Decimal("1")
+            # Penalty DIP bonus only applies when the match was decided on penalties.
+            if match.get("duration") == "PENALTY_SHOOTOUT":
+                winner = _penalty_winner_code(match)
+                if winner and penalty_pick.upper() == str(winner).upper():
+                    points += Decimal("1")
         else:
             # duration-type DIP: '90' or '120'
             if base >= 1 and dip in {"90", "120"}:

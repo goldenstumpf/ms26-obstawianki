@@ -396,9 +396,9 @@ def render_match_row(r: dict, mode: str = "edit"):
                     index=dip_options.index(str(current)),
                     key=f"_ui_{dip_key}",
                     help=(
-                        "Dodatkowa Informacja Pucharowa (DIP) jest wymagana dla meczów pucharowych. "
-                        "Jeśli typujesz zwycięstwo (win/lose), wybierz czy rozstrzygnięcie nastąpi w 90 czy w 120 minut. "
-                        "Jeśli typujesz remis, wybierz kto wygra w karnych."
+                        "Mecze pucharowe wymagają DIP. "
+                        "Jeśli typujesz remis → wybierz kto wygra w karnych. "
+                        "Jeśli typujesz zwycięstwo → wybierz 90 lub 120."
                     ),
                     format_func=lambda x: dip_labels.get(x, str(x)),
                 )
