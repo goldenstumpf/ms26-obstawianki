@@ -1,9 +1,9 @@
-import streamlit as st
-from core.bets import get_full_bets_info
-from utils.formatters import format_username
 from collections import defaultdict
 
+import streamlit as st
 
+from app.data.full_bets_info import get_full_bets_info
+from app.utils.formatters import format_username
 
 
 def build_table(records: list[dict]) -> dict:

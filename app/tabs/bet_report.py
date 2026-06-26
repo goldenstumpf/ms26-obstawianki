@@ -1,9 +1,7 @@
 import streamlit as st
 
-from core.bets import get_full_bets_info
-from core.matches import get_bettable_matches
-from utils.components import render_match_row
-
+from app.data.full_bets_info import get_full_bets_info
+from app.utils.components import render_match_row
 
 # -----------------------------
 # FILTER LOGIC

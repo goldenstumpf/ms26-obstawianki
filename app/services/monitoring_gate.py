@@ -1,8 +1,10 @@
-from core.matches import get_matches
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
+from app.data.matches import list_matches
+
 
 def has_matches_to_monitor():
-    matches = get_matches()
+    matches = list_matches()
 
     now = datetime.now(timezone.utc)
 

@@ -1,10 +1,10 @@
-import streamlit as st
 from collections import defaultdict
 
-from core.bets import get_full_bets_info
-from utils.formatters import format_username
-from utils.components import render_match_row
+import streamlit as st
 
+from app.data.full_bets_info import get_full_bets_info
+from app.utils.components import render_match_row
+from app.utils.formatters import format_username
 
 # =========================================================
 # HELPERS

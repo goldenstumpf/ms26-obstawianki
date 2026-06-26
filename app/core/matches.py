@@ -1,7 +1,14 @@
+"""DEPRECATED: use app.data.matches instead.
+
+This module remains only for historical reference.
+All database access should go through `app.data`.
+"""
+
 from datetime import datetime, timedelta, timezone
-from core.db import get_supabase
-from typing import TypedDict, Optional
-from utils.time import parse_kickoff
+from typing import Optional, TypedDict
+
+from app.core.db import get_supabase
+from app.utils.time import parse_kickoff
 
 # =========================
 # MODELS

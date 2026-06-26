@@ -1,0 +1,252 @@
+[
+  {
+    "username": "alice",
+    "match_id": "m1",
+    "home_bet": 2,
+    "away_bet": 1,
+    "status": "closed",
+    "points": 4.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "bob",
+    "match_id": "m1",
+    "home_bet": 1,
+    "away_bet": 1,
+    "status": "closed",
+    "points": 0.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "charlie",
+    "match_id": "m1",
+    "home_bet": 3,
+    "away_bet": 1,
+    "status": "closed",
+    "points": 1.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "edward",
+    "match_id": "m1",
+    "home_bet": 2,
+    "away_bet": 0,
+    "status": "closed",
+    "points": 2.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "charlie",
+    "match_id": "m2",
+    "home_bet": 1,
+    "away_bet": 0,
+    "status": "closed",
+    "points": 0.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "diana",
+    "match_id": "m2",
+    "home_bet": 0,
+    "away_bet": 0,
+    "status": "closed",
+    "points": 4.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "bob",
+    "match_id": "m3",
+    "home_bet": 1,
+    "away_bet": 2,
+    "status": "closed",
+    "points": 0.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "diana",
+    "match_id": "m3",
+    "home_bet": 0,
+    "away_bet": 3,
+    "status": "closed",
+    "points": 2.0,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "alice",
+    "match_id": "m4",
+    "home_bet": 1,
+    "away_bet": 0,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "charlie",
+    "match_id": "m4",
+    "home_bet": 2,
+    "away_bet": 2,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "alice",
+    "match_id": "m5",
+    "home_bet": 1,
+    "away_bet": 1,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "bob",
+    "match_id": "m5",
+    "home_bet": 0,
+    "away_bet": 1,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "diana",
+    "match_id": "m7",
+    "home_bet": 2,
+    "away_bet": 0,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "edward",
+    "match_id": "m9",
+    "home_bet": 3,
+    "away_bet": 2,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-25T15:21:39.247000Z",
+    "dip": null
+  },
+  {
+    "username": "bob",
+    "match_id": "m10",
+    "home_bet": 0,
+    "away_bet": 0,
+    "status": "pending",
+    "points": null,
+    "updated_at": "2026-06-26T09:02:19.954000Z",
+    "dip": "karne: ARG"
+  },
+  {
+    "username": "alice",
+    "match_id": "m10",
+    "home_bet": 1,
+    "away_bet": 1,
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z",
+    "dip": "karne: ENG"
+  },
+  {
+    "username": "alice",
+    "match_id": "m8",
+    "home_bet": 3,
+    "away_bet": 1,
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z",
+    "dip": "90"
+  },
+  {
+    "username": "alice",
+    "match_id": "1",
+    "home_bet": 1,
+    "away_bet": 2,
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T07:25:56.244858Z",
+    "dip": null
+  },
+  {
+    "username": "bob",
+    "match_id": "m8",
+    "home_bet": 2,
+    "away_bet": 0,
+    "dip": "90",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "charlie",
+    "match_id": "m8",
+    "home_bet": 1,
+    "away_bet": 2,
+    "dip": "90",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "alice",
+    "match_id": "m9",
+    "home_bet": 2,
+    "away_bet": 1,
+    "dip": "120",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "bob",
+    "match_id": "m9",
+    "home_bet": 1,
+    "away_bet": 1,
+    "dip": "120",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "alice",
+    "match_id": "m7",
+    "home_bet": 1,
+    "away_bet": 0,
+    "dip": "90",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "bob",
+    "match_id": "m7",
+    "home_bet": 0,
+    "away_bet": 0,
+    "dip": "karne: ENG",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T09:02:19.954000Z"
+  },
+  {
+    "username": "alice",
+    "match_id": "m6",
+    "home_bet": 0,
+    "away_bet": 2,
+    "dip": "120",
+    "points": null,
+    "status": "pending",
+    "updated_at": "2026-06-26T10:39:00.561935Z"
+  }
+]

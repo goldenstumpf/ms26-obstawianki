@@ -1,6 +1,12 @@
-from typing import Optional, TypedDict
-from core.db import get_supabase
+"""DEPRECATED: use app.data.users instead.
 
+This module remains only for historical reference.
+All database access should go through `app.data`.
+"""
+
+from typing import Optional, TypedDict
+
+from app.core.db import get_supabase
 
 # =========================
 # MODEL (opcjonalny, ale pomaga)

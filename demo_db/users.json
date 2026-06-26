@@ -1,0 +1,22 @@
+[
+  {
+    "username": "alice",
+    "pin": "1111"
+  },
+  {
+    "username": "bob",
+    "pin": "2222"
+  },
+  {
+    "username": "charlie",
+    "pin": "3333"
+  },
+  {
+    "username": "diana",
+    "pin": "4444"
+  },
+  {
+    "username": "edward",
+    "pin": "5555"
+  }
+]
