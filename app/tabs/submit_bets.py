@@ -33,8 +33,33 @@ def render_submit_bets() -> None:
     # -------------------------
     # SPLIT
     # -------------------------
-    unbet_records = [r for r in records if r.get("home_bet") is None]
-    bet_records = [r for r in records if r.get("home_bet") is not None]
+    # DIP is required for all knockout (pucharowe) matches.
+    # If home/away are filled but DIP is missing, treat as NOT submitted.
+    KNOCKOUT_STAGES: set[str] = {
+        "FINAL",
+        "THIRD_PLACE",
+        "SEMI_FINALS",
+        "QUARTER_FINALS",
+        "LAST_16",
+        "LAST_32",
+        "LAST_64",
+        "ROUND_4",
+    }
+
+    def _dip_required(r: dict) -> bool:
+        return r.get("stage") in KNOCKOUT_STAGES
+
+    def _is_submitted(r: dict) -> bool:
+        has_score = r.get("home_bet") is not None and r.get("away_bet") is not None
+        if not has_score:
+            return False
+        if _dip_required(r):
+            dip = r.get("dip")
+            return dip is not None and str(dip).strip() != ""
+        return True
+
+    unbet_records = [r for r in records if not _is_submitted(r)]
+    bet_records = [r for r in records if _is_submitted(r)]
 
     # -------------------------
     # SECTION 1
