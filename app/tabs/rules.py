@@ -11,59 +11,95 @@ def render_rules() -> None:
 
     st.markdown(
         """
-## 1. Ogólne zasady
-1. Zabawa polega na typowaniu wyników meczów turnieju oraz zbieraniu punktów za trafność typów.
-2. Zwycięzcą zabawy zostaje uczestnik, który po zakończeniu turnieju zgromadzi największą liczbę punktów.
+## 1. Postanowienia ogólne
 
-## 2. Zakłady
-### 2.1. Mecze
-1. Zabawa obejmuje mecze całego turnieju.
-2. Możliwość wprowadzania zakładu dotyczy wyłącznie meczów:
-   1) rozpoczynających się w najbliższych 72 godzinach, oraz
-   2) dla których znane są obie drużyny (gospodarze i goście).
+1. Zabawa polega na typowaniu wyników meczów objętych turniejem oraz zdobywaniu punktów za poprawność typów.
+2. Zwycięzcą zostaje uczestnik, który po zakończeniu turnieju zgromadzi największą liczbę punktów.
+3. Regulamin określa zasady wprowadzania typów, przyznawania punktów oraz ustalania klasyfikacji końcowej.
 
-### 2.2. Zmiana zakładów
-1. Dla jednego meczu dopuszcza się wprowadzenie zakładu oraz jego późniejszą zmianę.
-2. Liczba zmian zakładu dla jednego meczu jest nieograniczona.
-3. Zmiana zakładu jest dopuszczalna wyłącznie do oficjalnej godziny rozpoczęcia meczu.
+## 2. Zakres zabawy
+
+### 2.1. Mecze objęte typowaniem
+
+1. Typowanie obejmuje wszystkie mecze rozgrywane w ramach turnieju.
+2. Typ można wprowadzić wyłącznie dla meczu, który spełnia łącznie następujące warunki:
+   1) jego rozpoczęcie nastąpi w ciągu najbliższych 72 godzin,
+   2) znane są obie drużyny uczestniczące w meczu.
+
+### 2.2. Wprowadzanie i zmiana typów
+
+1. Dla każdego meczu uczestnik może wprowadzić jeden typ.
+2. Wprowadzony typ może być dowolnie zmieniany przed rozpoczęciem meczu.
+3. Liczba zmian typu przed rozpoczęciem meczu jest nieograniczona.
+4. Po oficjalnej godzinie rozpoczęcia meczu typ nie może zostać dodany ani zmieniony.
 
 ### 2.3. Sytuacje nadzwyczajne
-1. W wyjątkowych, nagłych przypadkach dopuszcza się przekazanie zakładu organizatorowi innym kanałem.
-2. Warunkiem rozpatrzenia takiego typu jest udokumentowanie, że został on przekazany na czas.
-3. O uwzględnieniu zakładu przekazanego w trybie nadzwyczajnym decyduje organizator.
 
-## 3. Punktacja
-### 3.1. Podstawowa
-1. Za jeden mecz przyznaje się wyłącznie jeden z poniższych wyników punktowych (nie sumują się):
-   1) **4 pkt** – za **dokładny wynik**,
-   2) **2 pkt** – za **różnicę bramek**,
-   3) **1 pkt** – za **rezultat**.
-2. W meczach fazy grupowej rezultat obejmuje również remis.
-3. W meczach pucharowych rezultat odnosi się do wskazania zwycięzcy; w przypadku zakładu remisowego wymagane jest wskazanie zwycięzcy w DIP (pkt 3.3).
+1. W wyjątkowych i nagłych przypadkach uczestnik może przekazać typ organizatorowi innym kanałem niż standardowy sposób wprowadzania typów.
+2. Warunkiem uwzględnienia takiego typu jest możliwość potwierdzenia, że został on przekazany przed rozpoczęciem meczu.
+3. Uwzględnienie typu przekazanego w trybie nadzwyczajnym ma charakter wyjątkowy i każdorazowo wymaga decyzji organizatora.
+
+## 3. Zasady punktacji
+
+### 3.1. Punktacja podstawowa
+
+1. Za każdy mecz uczestnik może otrzymać punkty bazowe wyłącznie z jednego z poniższych tytułów:
+   1) **4 punkty** – za trafienie dokładnego wyniku meczu,
+   2) **2 punkty** – za trafienie różnicy bramek,
+   3) **1 punkt** – za trafienie rezultatu meczu.
+2. Punkty bazowe za jeden mecz nie sumują się.
+3. Przez **dokładny wynik** rozumie się prawidłowe wskazanie liczby bramek zdobytych przez każdą z drużyn.
+4. Przez **różnicę bramek** rozumie się prawidłowe wskazanie różnicy między liczbą bramek obu drużyn, bez konieczności trafienia dokładnego wyniku.
+5. Przez **rezultat meczu** rozumie się:
+   1) w meczach fazy grupowej – prawidłowe wskazanie zwycięstwa jednej lub drugiej drużyny, albo remisu,
+   2) w meczach fazy pucharowej – prawidłowe wskazanie zwycięstwa jednej lub drugiej drużyny, z uwzględnieniem zasad określonych w pkt 3.3-3.4.
 
 ### 3.2. Połówka pocieszenia
-1. Dodatkowo przyznaje się **+0,5 pkt (połówka pocieszenia)**, jeżeli zakład różni się od wyniku końcowego łącznie o dokładnie jedną bramkę, tj. spełniony jest warunek:
-   `|wynik gosp. - typ gosp.| + |wynik gość - typ gość| == 1`.
 
-### 3.3. DIP (Dodatkowa Informacja Pucharowa)
-1. DIP jest skrótem od **Dodatkowa Informacja Pucharowa** i dotyczy wyłącznie meczów pucharowych.
-2. Jeżeli zakład wskazuje zwycięstwo jednej z drużyn (zakład nieremisowy), DIP dotyczy **czasu rozstrzygnięcia** i może przyjąć wartość:
-   1) `90` – rozstrzygnięcie w regulaminowym czasie,
-   2) `120` – rozstrzygnięcie po dogrywce.
-3. Za prawidłowe wskazanie czasu rozstrzygnięcia przyznaje się **+1 pkt**, pod warunkiem że zakład uzyskał co najmniej **1 pkt punktów bazowych** (wskazano dobrego zwycięzcę).
-4. Jeżeli zakład wskazuje remis, DIP służy do wskazania zwycięzcy w rzutach karnych w postaci: `karne: XXX`.
-5. W meczach pucharowych wskazanie zwycięzcy w DIP (karne) może zostać uwzględnione przy rozstrzyganiu rezultatu (1 pkt), ponieważ w meczach pucharowych nie występuje remis jako wynik rozstrzygający.
-6. Jeżeli mecz faktycznie został rozstrzygnięty w rzutach karnych, za prawidłowe wskazanie zwycięzcy w DIP przyznaje się dodatkowo **+1 pkt**.
+1. Uczestnik może otrzymać dodatkowo **0,5 punktu**, jeżeli jego typ różni się od rzeczywistego wyniku łącznie o dokładnie jedną bramkę.
+2. Warunek jest spełniony, gdy:
 
-## 4. Ranking
-1. O miejscu w rankingu decydują kolejno:
-   1) łączna liczba punktów,
-   2) liczba meczów trafionych dokładnie (dokładny wynik),
-   3) średnia punktów,
-   4) remis.
+   `|wynik gospodarzy - typ gospodarzy| + |wynik gości - typ gości| = 1`
 
-## 5. Interpretacje
-1. Całość niniejszego regulaminu podlega ostatecznej interpretacji organizatora.
+3. Połówka pocieszenia sumuje się z punktacją bazową.
+
+### 3.3. DIP
+
+1. **DIP (Dodatkowa Informacja Pucharowa)** dotyczy wyłącznie meczów fazy pucharowej. I występuje w dwóch odmianach.
+   1) **DIP (czas)**, jeżeli podstawowy typ wskazuje zwycięstwo jednej z drużyn,
+   2) **DIP (karne)**, jeżeli podstawowy typ wskazuje remis.
+2. Brak wymaganego DIP w meczu fazy pucharowej może skutkować nieuwzględnieniem części punktacji zależnej od tego wskazania.
+3. DIP nie ma zastosowania do meczów fazy grupowej.
+
+**DIP (czas) – czas rozstrzygnięcia**
+
+4. W przypadku obstawienia zwycięstwa którejś z drużyn w fazie pucharowej, uczestnik zobowiązany jest do wskazania czasu rozstrzygnięcia spotkania.
+5. DIP (czas) może przyjąć jedną z następujących wartości:
+   1) **`90`** – jeżeli mecz ma zostać rozstrzygnięty w regulaminowym czasie gry,
+   2) **`120`** – jeżeli mecz ma zostać rozstrzygnięty po dogrywce.
+6. Za prawidłowe wskazanie DIP (czas) przyznaje się **+1 punkt**, pod warunkiem że uczestnik uzyskał za dany mecz co najmniej **1 punkt bazowy** (czyli tylko jeśli poprawnie wskazał co najmniej rezultat meczu).
+
+**DIP (karne) – zwycięzca karnych**
+
+7. W przypadku typu remisowego w fazie pucharowej, uczestnik jest zobowiązany do wskazania zwycięzcy serii rzutów karnych w formie:
+
+   `karne: [nazwa drużyny]`
+
+8. W przypadku typu remisowego w meczu fazy pucharowej wskazanie zwycięzcy w karnych jest uwzględniane przy ocenie trafienia rezultatu meczu, ponieważ w fazie pucharowej remis nie stanowi wyniku ostatecznie rozstrzygającego.
+9. Jeżeli mecz został rozstrzygnięty w serii rzutów karnych, za prawidłowe wskazanie zwycięzcy w DIP (karne) przyznaje się **+1 punkt**.
+
+## 4. Klasyfikacja
+
+1. O miejscu uczestnika w klasyfikacji końcowej decydują kolejno:
+   1) łączna liczba zdobytych punktów,
+   2) liczba meczów z trafionym dokładnym wynikiem,
+   3) średnia liczba punktów na obstawiony mecz.
+2. Jeżeli zastosowanie wszystkich kryteriów wskazanych w ust. 1 nie pozwoli na ustalenie kolejności, uczestnicy zajmują to samo miejsce w klasyfikacji.
+
+## 5. Postanowienia końcowe
+
+1. Organizator zastrzega sobie prawo do rozstrzygania sytuacji nieuregulowanych w niniejszym regulaminie.
+2. Ostateczna interpretacja postanowień regulaminu należy do organizatora.
 """
     )
 
