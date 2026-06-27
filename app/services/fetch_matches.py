@@ -41,9 +41,6 @@ def fetch_matches(competition_id: int = 2000) -> list[dict]:
 
     matches = data.get("matches", [])
 
-    for match in matches[1:5]:
-        print(match)
-
     # sort for deterministic ordering
     matches.sort(key=lambda m: m.get("utcDate", ""))
 
