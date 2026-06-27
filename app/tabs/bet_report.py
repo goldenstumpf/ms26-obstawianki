@@ -10,7 +10,7 @@ def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
     """Filter records shown in bet report.
 
     - include_upcoming=False: show LIVE + FINISHED
-    - include_upcoming=True: show LIVE + FINISHED + UPCOMING
+    - include_upcoming=True: show LIVE + FINISHED + UPCOMING (only if bet is placed)
 
     Note: flt_* may appear during live; we rely on classify_match_state().
     """
@@ -18,7 +18,10 @@ def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
     state = classify_match_state(r)
 
     if include_upcoming:
-        return True
+        if r.get("home_bet") is not None and r.get("away_bet") is not None:
+            return True
+        else:
+            return False
 
     return state in {"LIVE", "FINISHED"}
 
