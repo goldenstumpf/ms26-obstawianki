@@ -1,0 +1,18 @@
+def _resolve_demo_crest_path(crest_url: str | None) -> str | None:
+    """Map demo crest URL (/app/static/crests/*.svg) to local file path.
+
+    In DEMO_MODE we want strictly local assets (network-free). The demo data uses
+    URLs like /app/static/crests/home.svg; locally we keep files under
+    .streamlit/static/crests/.
+    """
+    if not crest_url:
+        return None
+    url = str(crest_url)
+    prefix = "/app/static/crests/"
+    if not url.startswith(prefix):
+        return None
+    name = url[len(prefix):]
+    p = Path(".streamlit") / "static" / "crests" / name
+    return str(p) if p.exists() else None
+
+

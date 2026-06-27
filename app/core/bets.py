@@ -1,7 +1,13 @@
-from datetime import datetime, timezone
-from core.db import get_supabase
-from typing import TypedDict, Any
+"""DEPRECATED: use app.data.* instead.
 
+This module remains only for historical reference.
+All database access should go through `app.data`.
+"""
+
+from datetime import datetime, timezone
+from typing import Any, TypedDict
+
+from app.core.db import get_supabase
 
 # =========================
 # MODELS

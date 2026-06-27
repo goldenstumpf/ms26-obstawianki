@@ -1,8 +1,9 @@
-import os
-import requests
 import logging
+import os
 
-from app.core.db import get_supabase
+import requests
+
+from app.data.match_ingest import upsert_matches
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +57,48 @@ def fetch_matches(competition_id: int = 2000) -> list[dict]:
 # -----------------------------
 
 def transform_match(match: dict) -> dict:
-    """
-    Normalize API match → Supabase row.
+    """Normalize football-data API match → Supabase row.
+
+    Important:
+    - football-data's `score.fullTime` may include penalties for matches decided
+      in a shootout.
+    - For our game, we persist:
+      - flt_* as the final score *before* penalties (after ET if played)
+      - pens_* as the penalty shootout score (when available)
     """
 
-    score = match.get("score", {})
+    score = match.get("score", {}) or {}
+
+    # football-data uses homeTeam/awayTeam keys in the score objects
     ft = score.get("fullTime", {}) or {}
     et = score.get("extraTime", {}) or {}
     pen = score.get("penalties", {}) or {}
+
+    ft_home = ft.get("homeTeam")
+    ft_away = ft.get("awayTeam")
+
+    et_home = et.get("homeTeam")
+    et_away = et.get("awayTeam")
+
+    pen_home = pen.get("homeTeam")
+    pen_away = pen.get("awayTeam")
+
+    duration = score.get("duration")
+
+    # Derive the final score *before* penalties.
+    # If a shootout happened, football-data may report fullTime as (pre-pen + pens).
+    flt_home = ft_home
+    flt_away = ft_away
+
+    if (
+        duration == "PENALTY_SHOOTOUT"
+        and ft_home is not None
+        and ft_away is not None
+        and pen_home is not None
+        and pen_away is not None
+    ):
+        flt_home = ft_home - pen_home
+        flt_away = ft_away - pen_away
 
     home = match.get("homeTeam", {}) or {}
     away = match.get("awayTeam", {}) or {}
@@ -85,20 +120,20 @@ def transform_match(match: dict) -> dict:
         "stage": match.get("stage"),
         "group_name": match.get("group"),
 
-        "duration": score.get("duration"),
+        "duration": duration,
         "minute": score.get("minute"),
 
-        # full time
-        "flt_home": ft.get("home"),
-        "flt_away": ft.get("away"),
+        # final score before penalties (after ET if played)
+        "flt_home": flt_home,
+        "flt_away": flt_away,
 
-        # extra time
-        "ext_home": et.get("home"),
-        "ext_away": et.get("away"),
+        # extra time (as provided by API; kept for possible future analysis)
+        "ext_home": et_home,
+        "ext_away": et_away,
 
         # penalties
-        "pens_home": pen.get("home"),
-        "pens_away": pen.get("away"),
+        "pens_home": pen_home,
+        "pens_away": pen_away,
 
         "home_crest": home.get("crest"),
         "away_crest": away.get("crest"),
@@ -122,9 +157,7 @@ def save_matches_to_supabase(matches: list[dict]) -> None:
 
     logger.info(f"Upserting {len(rows)} matches to Supabase")
 
-    get_supabase().table("matches") \
-        .upsert(rows, on_conflict="match_id") \
-        .execute()
+    upsert_matches(rows)
 
     logger.info("Matches upsert completed")
 

@@ -1,10 +1,19 @@
-from datetime import datetime, timezone
-from decimal import Decimal
+import os
 import logging
+from decimal import Decimal
 
-from app.core.db import get_supabase
+from app.data.bets import list_active_bets
+from app.data.scoring import fetch_matches_map as fetch_matches_map_dal
+from app.data.scoring import update_bet_row
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+if os.getenv("APP_DEBUG") == "1":
+    logging.getLogger().setLevel(logging.DEBUG)
+
+# additionally silence chatty libs by default
+for name in ["httpcore", "hpack", "httpx"]:
+    logging.getLogger(name).setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # -----------------------------
@@ -46,13 +55,79 @@ def resolve_bet_status(match_status: str) -> str:
 # SCORING LOGIC
 # -----------------------------
 
-def calculate_points(bet: dict, match: dict) -> Decimal | None:
+KNOCKOUT_STAGES = {
+    "FINAL",
+    "THIRD_PLACE",
+    "SEMI_FINALS",
+    "QUARTER_FINALS",
+    "LAST_16",
+    "LAST_32",
+    "LAST_64",
+    "ROUND_4",
+}
+
+
+def _sign(x: int) -> int:
+    return (x > 0) - (x < 0)
+
+
+def _is_knockout(match: dict) -> bool:
+    return match.get("stage") in KNOCKOUT_STAGES
+
+
+def _parse_penalty_dip(dip: str | None) -> str | None:
+    """Return team code after 'karne:' if dip is penalty-type."""
+    if not dip:
+        return None
+    d = dip.strip()
+    if not d.lower().startswith("karne"):
+        return None
+    # Accept: "karne: GER" or "karne GER"
+    d = d.replace("karne", "", 1).strip()
+    if d.startswith(":"):
+        d = d[1:].strip()
+    return d or None
+
+
+def _penalty_winner_code(match: dict) -> str | None:
+    """Resolve winner code using penalties when available.
+
+    Falls back to pre-penalties final score (flt) if penalty scores are missing.
     """
-    Scoring rules:
-    - 4 pts: exact score
-    - 2 pts: correct goal difference
-    - 1 pt: correct winner
-    - +0.5 bonus: near miss (total deviation = 1 goal)
+    ph = match.get("pens_home")
+    pa = match.get("pens_away")
+    if ph is not None and pa is not None:
+        if ph > pa:
+            return match.get("home_code")
+        if pa > ph:
+            return match.get("away_code")
+        return None
+
+    # fallback
+    mh = match.get("flt_home")
+    ma = match.get("flt_away")
+    if mh is None or ma is None:
+        return None
+    if mh > ma:
+        return match.get("home_code")
+    if ma > mh:
+        return match.get("away_code")
+    return None
+
+
+def calculate_points(bet: dict, match: dict) -> Decimal | None:
+    """Calculate points for a single bet.
+
+    Base points:
+    - 4 pts: dokładny wynik (exact score)
+    - 2 pts: różnica bramek (goal difference)
+    - 1 pt: rezultat (winner/draw) — draw is only a valid 'rezultat' in GROUP_STAGE
+    - +0.5 bonus: pudło o jednego gola (sum of abs deltas == 1)
+
+    DIP (knockout only):
+    - Duration DIP (+1) if dip is '90' or '120' and matches duration, but only if base >= 1.
+    - Penalty DIP (+1) if dip is 'karne: XXX' and predicted winner in penalties is correct,
+      even if base points are 0.
 
     Returns None if match is not scorable.
     """
@@ -68,24 +143,70 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
     if bh is None or ba is None:
         return None
 
+    stage = match.get("stage")
+    duration = match.get("duration")
+    dip = bet.get("dip")
+
+    is_knockout = _is_knockout(match)
+
+    base = Decimal("0")
+
     # exact score
     if bh == mh and ba == ma:
-        points = Decimal("4")
+        base = Decimal("4")
 
     # correct goal difference
     elif (bh - ba) == (mh - ma):
-        points = Decimal("2")
-
-    # correct winner
-    elif (bh > ba) - (bh < ba) == (mh > ma) - (mh < ma):
-        points = Decimal("1")
+        base = Decimal("2")
 
     else:
-        points = Decimal("0")
+        # rezultat
+        if not is_knockout:
+            # group stage: allow draw rezultat based purely on full-time score
+            bet_sign = _sign(bh - ba)
+            match_sign = _sign(mh - ma)
+            if bet_sign == match_sign:
+                base = Decimal("1")
+        else:
+            # knockout: a winner must exist; resolve winner for bet & match
+            # - bet winner is from score sign if non-draw, otherwise from penalty DIP ('karne: XXX')
+            # - match winner is from penalties when present, fallback to full-time (pre-penalties) score
+            match_winner = _penalty_winner_code(match)
 
-    # bonus: near miss
+            bet_winner: str | None
+            bet_sign = _sign(bh - ba)
+            if bet_sign > 0:
+                bet_winner = match.get("home_code")
+            elif bet_sign < 0:
+                bet_winner = match.get("away_code")
+            else:
+                bet_winner = _parse_penalty_dip(dip)
+
+            if match_winner and bet_winner and str(match_winner).upper() == str(bet_winner).upper():
+                base = Decimal("1")
+
+    points = base
+
+    # bonus: near miss (applies always when match has score)
     if abs(mh - bh) + abs(ma - ba) == 1:
         points += Decimal("0.5")
+
+    # DIP handling (knockout only)
+    if is_knockout:
+        penalty_pick = _parse_penalty_dip(dip)
+        if penalty_pick:
+            # Penalty DIP bonus only applies when the match was decided on penalties.
+            if match.get("duration") == "PENALTY_SHOOTOUT":
+                winner = _penalty_winner_code(match)
+                if winner and penalty_pick.upper() == str(winner).upper():
+                    points += Decimal("1")
+        else:
+            # duration-type DIP: '90' or '120'
+            if base >= 1 and dip in {"90", "120"}:
+                if (dip == "90" and duration == "REGULAR") or (
+                    dip == "120" and duration == "EXTRA_TIME"
+                ):
+                    points += Decimal("1")
 
     return points
 
@@ -95,37 +216,15 @@ def calculate_points(bet: dict, match: dict) -> Decimal | None:
 # -----------------------------
 
 def fetch_active_bets() -> list[dict]:
-    """
-    Fetch all bets that are not closed.
-    """
-    res = (
-        get_supabase()
-        .table("bets")
-        .select("*")
-        .neq("status", "closed")
-        .execute()
-    )
+    """Fetch all bets that are not closed."""
 
-    return res.data or []
+    return list_active_bets()
 
 
 def fetch_matches_map(match_ids: list[str]) -> dict[str, dict]:
-    """
-    Batch fetch matches and return map:
-    match_id → match
-    """
-    if not match_ids:
-        return {}
+    """Batch fetch matches and return map: match_id → match."""
 
-    res = (
-        get_supabase()
-        .table("matches")
-        .select("*")
-        .in_("match_id", match_ids)
-        .execute()
-    )
-
-    return {m["match_id"]: m for m in (res.data or [])}
+    return fetch_matches_map_dal(match_ids)
 
 
 # -----------------------------
@@ -171,13 +270,12 @@ def update_bet(bet: dict, match: dict) -> dict:
         }
 
     # update DB
-    get_supabase().table("bets").update({
-        "status": new_status,
-        "points": float(new_points) if new_points is not None else None,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }).eq("username", bet["username"]) \
-      .eq("match_id", bet["match_id"]) \
-      .execute()
+    update_bet_row(
+        bet["username"],
+        bet["match_id"],
+        status=new_status,
+        points=float(new_points) if new_points is not None else None,
+    )
     
     #logger.info(
     #    f"UPDATE user={bet['username']} match={bet['match_id']} "

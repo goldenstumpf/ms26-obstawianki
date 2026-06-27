@@ -1,12 +1,30 @@
+.venv/
 venv/
 __pycache__/
 *.pyc
 
+# Streamlit
 .streamlit/secrets.toml
 
-data/users.json
+# Local environment
+.env
 
+# Test/tooling
+.pytest_cache/
+.ruff_cache/
+
+# IDEs
 .vscode/
 .idea/
 
-.env
+# Demo DB temp files (atomic writes)
+demo_db/*.tmp
+
+# Generated outputs / artifacts
+outputs/
+
+# Len workspace (auto-generated)
+.lenwork/
+
+# Safe-Coder checkpoints (auto-generated)
+.lencode-shadow/

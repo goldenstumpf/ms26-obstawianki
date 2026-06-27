@@ -1,37 +1,26 @@
 import streamlit as st
 
-from core.bets import get_full_bets_info
-from core.matches import get_bettable_matches
-from utils.components import render_match_row
+from app.data.full_bets_info import get_full_bets_info
+from app.utils.components import render_match_row
+from app.utils.match_state import LIVE_STATUSES, classify_match_state
 
-
-# -----------------------------
-# FILTER LOGIC
-# -----------------------------
-
-LIVE_STATUSES = {
-    "IN_PLAY",
-    "PAUSED",
-    "EXTRA_TIME",
-    "PENALTY_SHOOTOUT",
-}
 
 
 def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
-    is_bet = (
-        r.get("home_bet") is not None
-        and r.get("away_bet") is not None
-    )
+    """Filter records shown in bet report.
 
-    has_result = (
-        r.get("flt_home") is not None
-        and r.get("flt_away") is not None
-    )
+    - include_upcoming=False: show LIVE + FINISHED
+    - include_upcoming=True: show LIVE + FINISHED + UPCOMING
+
+    Note: flt_* may appear during live; we rely on classify_match_state().
+    """
+
+    state = classify_match_state(r)
 
     if include_upcoming:
-        return is_bet or has_result
+        return True
 
-    return has_result
+    return state in {"LIVE", "FINISHED"}
 
 
 # -----------------------------
@@ -41,6 +30,11 @@ def is_relevant_match(r: dict, include_upcoming: bool) -> bool:
 def sort_matches(records: list[dict], mode: str) -> list[dict]:
     """
     Stabilne sortowanie raportu betów.
+
+    Tryb "Od najbliższych" sortuje kategoriami:
+    1) nadchodzące (od najbliższego terminu),
+    2) na żywo,
+    3) zakończone (od najnowszego).
     """
 
     def safe_points(r):
@@ -49,6 +43,27 @@ def sort_matches(records: list[dict], mode: str) -> list[dict]:
     def safe_date(r):
         # fallback żeby None nie rozwalało sortowania
         return r.get("utc_date") or ""
+
+    def has_result(r: dict) -> bool:
+        return r.get("flt_home") is not None and r.get("flt_away") is not None
+
+    def is_live(r: dict) -> bool:
+        # status can be match live status (caps) OR UI live marker (lowercase)
+        return (r.get("status") == "live") or (r.get("status") in LIVE_STATUSES)
+
+    if mode == "Od najbliższych 🕒":
+        upcoming = [r for r in records if (not has_result(r)) and (not is_live(r))]
+        live = [r for r in records if (not has_result(r)) and is_live(r)]
+        finished = [r for r in records if has_result(r)]
+
+        # upcoming: closest kickoff first (ascending)
+        upcoming = sorted(upcoming, key=safe_date)
+        # live: keep consistent ordering
+        live = sorted(live, key=safe_date)
+        # finished: same as "Od najnowszych" (descending)
+        finished = sorted(finished, key=safe_date, reverse=True)
+
+        return upcoming + live + finished
 
     if mode == "Od najnowszych ⏳":
         return sorted(records, key=safe_date, reverse=True)
@@ -92,8 +107,15 @@ def render_bet_report():
     # -------------------------
     sort_mode = st.selectbox(
         "Sortowanie",
-        ["Od najnowszych ⏳", "Od najstarszych ⌛", "Od najlepszych 📈", "Od najsłabszych 📉"],
+        [
+            "Od najbliższych 🕒",
+            "Od najnowszych ⏳",
+            "Od najstarszych ⌛",
+            "Od najlepszych 📈",
+            "Od najsłabszych 📉",
+        ],
         index=0,
+        help="Od najbliższych: nadchodzące↑ → na żywo → zakończone↓; Od najnowszych: data↓; Od najstarszych: data↑; Od najlepszych: pkt↓; Od najsłabszych: pkt↑",
     )
 
     show_upcoming = st.toggle(

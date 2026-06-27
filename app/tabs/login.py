@@ -1,7 +1,9 @@
 import streamlit as st
-from core.users import authenticate
 
-def render_login():
+from app.data.users import authenticate_user
+
+
+def render_login() -> None:
 
     st.title("Login")
 
@@ -9,7 +11,7 @@ def render_login():
     pin = st.text_input("PIN", type="password")
 
     if st.button("Zaloguj"):
-        if authenticate(nick, pin):
+        if authenticate_user(nick, pin):
             st.session_state["user"] = nick
             st.success("OK")
             st.rerun()
