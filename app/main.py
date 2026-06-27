@@ -5,6 +5,7 @@ from app.tabs.live_center import render_live_tab
 from app.tabs.login import render_login
 from app.tabs.submit_bets import render_submit_bets
 from app.tabs.table import render_table as render_bets_table
+from app.tabs.rules import render_rules
 
 
 def run() -> None:
@@ -26,7 +27,8 @@ def run() -> None:
             "Złóż zakłady",
             "Mój raport",
             "Tabela",
-            "Centrum - Na żywo",
+            "Studio",
+            "Reguły",
         ],
     )
 
@@ -39,8 +41,11 @@ def run() -> None:
     if choice == "Tabela":
         render_bets_table()
 
-    if choice == "Centrum - Na żywo":
+    if choice == "Studio":
         render_live_tab()
+
+    if choice == "Reguły":
+        render_rules()
 
 
 if __name__ == "__main__":
