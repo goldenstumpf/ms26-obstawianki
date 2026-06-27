@@ -38,7 +38,11 @@ def fetch_matches(competition_id: int = 2000) -> list[dict]:
     response.raise_for_status()
 
     data = response.json()
+
     matches = data.get("matches", [])
+
+    for match in matches[1:5]:
+        print(match)
 
     # sort for deterministic ordering
     matches.sort(key=lambda m: m.get("utcDate", ""))
@@ -69,19 +73,19 @@ def transform_match(match: dict) -> dict:
 
     score = match.get("score", {}) or {}
 
-    # football-data uses homeTeam/awayTeam keys in the score objects
+    # football-data uses home/away keys in the score objects
     ft = score.get("fullTime", {}) or {}
     et = score.get("extraTime", {}) or {}
     pen = score.get("penalties", {}) or {}
 
-    ft_home = ft.get("homeTeam")
-    ft_away = ft.get("awayTeam")
+    ft_home = ft.get("home")
+    ft_away = ft.get("away")
 
-    et_home = et.get("homeTeam")
-    et_away = et.get("awayTeam")
+    et_home = et.get("home")
+    et_away = et.get("away")
 
-    pen_home = pen.get("homeTeam")
-    pen_away = pen.get("awayTeam")
+    pen_home = pen.get("home")
+    pen_away = pen.get("away")
 
     duration = score.get("duration")
 

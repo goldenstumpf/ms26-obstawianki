@@ -455,7 +455,7 @@ def render_live_tab() -> None:
         new_points = {u: _sum_points_for_user(records, u, include_live=True, include_finished=True) for u in users}
 
         _render_table(
-            title="Tabela LIVE",
+            title="Tabela (na żywo)",
             users=users,
             base_points=base_points,
             new_points=new_points,
