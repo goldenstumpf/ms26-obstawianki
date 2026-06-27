@@ -1,3 +1,4 @@
+import os
 import logging
 from decimal import Decimal
 
@@ -5,7 +6,14 @@ from app.data.bets import list_active_bets
 from app.data.scoring import fetch_matches_map as fetch_matches_map_dal
 from app.data.scoring import update_bet_row
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+if os.getenv("APP_DEBUG") == "1":
+    logging.getLogger().setLevel(logging.DEBUG)
+
+# additionally silence chatty libs by default
+for name in ["httpcore", "hpack", "httpx"]:
+    logging.getLogger(name).setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # -----------------------------
