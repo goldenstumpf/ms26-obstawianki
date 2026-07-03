@@ -41,6 +41,10 @@ def fetch_matches(competition_id: int = 2000) -> list[dict]:
 
     matches = data.get("matches", [])
 
+    for match in matches:
+        if match.get("score", {}).get("duration") == "PENALTY_SHOOTOUT":
+            print(match)
+
     # sort for deterministic ordering
     matches.sort(key=lambda m: m.get("utcDate", ""))
 
@@ -72,11 +76,15 @@ def transform_match(match: dict) -> dict:
 
     # football-data uses home/away keys in the score objects
     ft = score.get("fullTime", {}) or {}
+    rg = score.get("regularTime", {}) or {}
     et = score.get("extraTime", {}) or {}
     pen = score.get("penalties", {}) or {}
 
     ft_home = ft.get("home")
     ft_away = ft.get("away")
+
+    rg_home = rg.get("home")
+    rg_away = rg.get("away")
 
     et_home = et.get("home")
     et_away = et.get("away")
@@ -88,18 +96,28 @@ def transform_match(match: dict) -> dict:
 
     # Derive the final score *before* penalties.
     # If a shootout happened, football-data may report fullTime as (pre-pen + pens).
-    flt_home = ft_home
-    flt_away = ft_away
-
     if (
-        duration == "PENALTY_SHOOTOUT"
-        and ft_home is not None
-        and ft_away is not None
-        and pen_home is not None
-        and pen_away is not None
+        duration == "REGULAR"
+        and rg_home is not None
+        and rg_away is not None
     ):
-        flt_home = ft_home - pen_home
-        flt_away = ft_away - pen_away
+        flt_home = rg_home
+        flt_away = rg_away
+
+    elif (
+        duration in ["EXTRA_TIME", "PENALTY_SHOOTOUT"]
+        and rg_home is not None
+        and rg_away is not None
+        and et_home is not None
+        and et_away is not None
+    ):
+        flt_home = rg_home + et_home
+        flt_away = rg_away + et_away
+    
+    else:
+        flt_home = ft_home
+        flt_away = ft_away
+
 
     home = match.get("homeTeam", {}) or {}
     away = match.get("awayTeam", {}) or {}
