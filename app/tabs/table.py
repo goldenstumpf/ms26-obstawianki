@@ -127,6 +127,7 @@ def build_table(records: list[dict]) -> dict:
             "points": 0.0,
             "buckets": {**{v: 0 for v in BUCKET_INT_VALUES}, BUCKET_HALF_KEY: 0},
             "_per_match": [],  # list of (match_number, points)
+            "_form_history": [], # form (all matches)
         }
     )
 
@@ -135,12 +136,13 @@ def build_table(records: list[dict]) -> dict:
         if classify_match_state(r) != "FINISHED":
             continue
 
-        # Count 'Zakłady' only when the user actually placed a bet for this finished match.
-        if r.get("home_bet") is None or r.get("away_bet") is None:
-            continue
-
         user = r["username"]
         mn = _match_number(r)
+
+        # If no bet, just append the form history
+        if r.get("home_bet") is None or r.get("away_bet") is None:
+            table[user]["_form_history"].append((mn, None))
+            continue
 
         pts_raw = r.get("points")
         pts = float(pts_raw) if pts_raw is not None else 0.0
@@ -148,6 +150,7 @@ def build_table(records: list[dict]) -> dict:
         table[user]["matches"] += 1
         table[user]["points"] += pts
         table[user]["_per_match"].append((mn, pts))
+        table[user]["_form_history"].append((mn, pts))
 
         # bucket counts
         # Points are guaranteed to be integers or integer + 0.5
@@ -162,10 +165,10 @@ def build_table(records: list[dict]) -> dict:
         if is_half:
             table[user]["buckets"][BUCKET_HALF_KEY] += 1
 
-    # finalize form (last 5)
+    # finalize form (last 5 finished matches)
     for u, s in table.items():
-        s["_per_match"].sort(key=lambda x: x[0])
-        s["form"] = [pts for _, pts in s["_per_match"][-5:]]
+        s["_form_history"].sort(key=lambda x: x[0])
+        s["form"] = [pts for _, pts in s["_form_history"][-5:]]
 
     return dict(table)
 
@@ -181,11 +184,18 @@ def _color_from_style(style: str) -> str:
     return "#808080"
 
 
-def _form_dots_html(form_points: list[float]) -> str:
+def _form_dots_html(form_points: list[float | None]) -> str:
     dots = []
     for p in form_points:
-        col = _color_from_style(get_points_style(p))
-        dots.append(f"<span style='display:inline-block;width:7px;height:7px;border-radius:50%;background:{col};margin-left:3px;'></span>")
+        if p is None:
+            col = "#555555"   # brak typu
+        else:
+            col = _color_from_style(get_points_style(p))
+
+        dots.append(
+            f"<span style='display:inline-block;width:7px;height:7px;border-radius:50%;background:{col};margin-left:3px;'></span>"
+        )
+
     return "".join(dots)
 
 def render_table():
